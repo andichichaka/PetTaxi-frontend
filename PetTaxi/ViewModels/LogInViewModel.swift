@@ -17,6 +17,9 @@ final class LogInViewModel: ObservableObject {
     @Published var userPasswordError: String = ""
     
     @Published var isFormFilled: Bool = false
+    
+    @Published var errorMessage: String?
+    private let communicationManager = CommunicationManager.shared
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -49,4 +52,27 @@ final class LogInViewModel: ObservableObject {
                     .map { !$0.isEmpty && !$1.isEmpty }
                     .assign(to: &$isFormFilled)
     }
+    
+    func logIn(profile: LogIn, completion: @escaping (Bool, String?) -> Void) {
+            communicationManager.execute(
+                endpoint: .logIn,
+                body: profile,
+                responseType: SignUpResponse.self
+            ) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let response):
+                        if response.success, let token = response.access_token {
+                            completion(true, token)
+                        } else {
+                            self.errorMessage = response.message ?? "Login failed."
+                            completion(false, nil)
+                        }
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                        completion(false, nil)
+                    }
+                }
+            }
+        }
 }

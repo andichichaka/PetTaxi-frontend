@@ -18,11 +18,3 @@ struct LoginResponse: Codable {
     let message: String?
     let user: User?
 }
-
-struct User: Codable {
-    let id: Int?
-    let username: String
-    let email: String
-    let roles: String
-
-}

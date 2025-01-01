@@ -4,7 +4,6 @@ struct LogInView: View {
     @StateObject private var viewModel = LogInViewModel()
     @FocusState private var focusField: FocusField?
     @State private var showHomePage = false
-    @StateObject private var logInManager = LogInManager()
     
     var body: some View {
         NavigationStack {
@@ -41,8 +40,7 @@ struct LogInView: View {
                         username: viewModel.userName,
                         password: viewModel.userPassword
                     )
-                    let logInManager = LogInManager()
-                    logInManager.checkInfo(profile: newProfile, apiURL: "http://localhost:3000/auth/login") { success, token in
+                    viewModel.logIn(profile: newProfile) { success, token in
                         
                         if success, let token = token {
                             TokenManager.shared.saveToken(token)
@@ -67,7 +65,7 @@ struct LogInView: View {
                 .padding(.horizontal)
                 .disabled(!viewModel.isFormFilled)
                 
-                if let errorMessage = logInManager.errorMessage {
+                if let errorMessage = viewModel.errorMessage {
                                 Text(errorMessage)
                                     .foregroundColor(.red)
                                     .font(.caption)
