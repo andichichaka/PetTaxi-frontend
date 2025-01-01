@@ -76,3 +76,50 @@ final class CommunicationManager {
         }.resume()
     }
 }
+
+extension CommunicationManager {
+    func uploadFile(
+        endpoint: Endpoint,
+        fileData: Data,
+        fieldName: String,
+        fileName: String,
+        mimeType: String,
+        completion: @escaping (Result<Void, CommunicationError>) -> Void
+    ) {
+        guard let url = URL(string: endpoint.url) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        if let token = tokenManager.getToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(fileData)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        request.httpBody = body
+        
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                completion(.failure(.networkError(error.localizedDescription)))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                completion(.failure(.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)))
+                return
+            }
+            
+            completion(.success(()))
+        }.resume()
+    }
+}

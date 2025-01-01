@@ -15,9 +15,11 @@ struct ProfilePictureDialog: View {
     @State private var selectedImage: UIImage?
     @State private var isUploading = false
     @State private var errorMessage: String?
+    
+    let action: () -> Void // Completion action after a successful upload
+    let skipAction: () -> Void // Skip action if the user decides not to upload
 
-    let action: (UIImage?) -> Void
-    let skipAction: () -> Void
+    private let communicationManager = CommunicationManager.shared
 
     var body: some View {
         ZStack {
@@ -87,12 +89,13 @@ struct ProfilePictureDialog: View {
                     .cornerRadius(10)
 
                     Button("Continue") {
-                        guard let selectedImage = selectedImage else {
+                        guard let selectedImage = selectedImage,
+                              let imageData = selectedImage.jpegData(compressionQuality: 0.8) else {
                             errorMessage = "Please select an image"
                             return
                         }
                         isUploading = true
-                        action(selectedImage)
+                        uploadProfilePicture(imageData: imageData)
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -124,4 +127,27 @@ struct ProfilePictureDialog: View {
             errorMessage = "Failed to load image. Please try again."
         }
     }
+
+    private func uploadProfilePicture(imageData: Data) {
+        let endpoint = Endpoint.custom("profile/upload-profile-pic") // Adjust this to the actual endpoint for uploading profile pictures
+        communicationManager.uploadFile(
+            endpoint: endpoint,
+            fileData: imageData,
+            fieldName: "file",
+            fileName: "profile_picture.jpg",
+            mimeType: "image/jpeg"
+        ) { result in
+            DispatchQueue.main.async {
+                isUploading = false
+                switch result {
+                case .success:
+                    action()
+                    close()
+                case .failure(let error):
+                    errorMessage = "Upload failed: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }
+

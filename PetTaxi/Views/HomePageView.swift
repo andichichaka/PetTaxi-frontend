@@ -88,20 +88,15 @@ struct HomePageView: View {
                     .background(Color.yellow.opacity(0.2))
                 }
                 
-                if showProfilePictureDialog {
-                    ProfilePictureDialog(isActive: $showProfilePictureDialog) { image in
-                        viewModel.uploadProfilePicture(image: image!) { success in
-                            if success {
-                                showProfilePictureDialog = false
-                            } else {
-                                print("Failed to upload profile picture.")
-                            }
-                        }
-                    } skipAction: {
-                        showProfilePictureDialog = false
-                        print("User skipped profile picture upload.")
-                    }
-                                   
+                // Profile Picture Dialog
+                               if showProfilePictureDialog {
+                                   ProfilePictureDialog(isActive: $showProfilePictureDialog) {
+                                       // Action on successful upload
+                                       print("Profile picture uploaded successfully.")
+                                   } skipAction: {
+                                       // Skip action
+                                       print("User skipped profile picture upload.")
+                                   }
                                }
                            }
                            .onAppear {
@@ -116,19 +111,6 @@ struct HomePageView: View {
         }
     }
 }
-
-//ProfilePictureDialog(isActive: $showProfilePictureDialog) { image in
-//    viewModel.uploadProfilePicture(image: image!) { success in
-//        if success {
-//            showProfilePictureDialog = false
-//        } else {
-//            print("Failed to upload profile picture.")
-//        }
-//    }
-//} skipAction: {
-//    showProfilePictureDialog = false
-//    print("User skipped profile picture upload.")
-//}
 
 
 #Preview{
