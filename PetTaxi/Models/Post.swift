@@ -9,9 +9,10 @@ import Foundation
 
 struct Post: Identifiable, Codable {
     let id: Int
-    let imagesUrl: String
+    let imagesUrl: [String]?
     let description: String
     let serviceType: String
     let animalType: String
+    let animalSize: String
     let user: User
 }

@@ -24,6 +24,9 @@ class AuthViewModel: ObservableObject {
     private let requiredFields: Set<FocusField> = [.username, .email, .password, .repeatPassword]
 
     private var cancellables = Set<AnyCancellable>()
+    
+    @Published var errorMessage: String?
+    private let communicationManager = CommunicationManager.shared
 
     init() {
         setupValidation()
@@ -107,4 +110,27 @@ class AuthViewModel: ObservableObject {
         }
         return ""
     }
+    
+    func signUp(profile: SignUp, completion: @escaping (Bool, String?) -> Void) {
+            communicationManager.execute(
+                endpoint: .signUp,
+                body: profile,
+                responseType: SignUpResponse.self
+            ) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let response):
+                        if response.success, let token = response.access_token {
+                            completion(true, token)
+                        } else {
+                            self.errorMessage = response.message ?? "Sign up failed."
+                            completion(false, nil)
+                        }
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                        completion(false, nil)
+                    }
+                }
+            }
+        }
 }
