@@ -4,7 +4,6 @@ struct SignUpView: View {
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var focusField: FocusField?
     @State private var showHomePage = false
-    @StateObject private var signUpManager = SignUpManager()
 
     var body: some View {
         NavigationStack {
@@ -63,13 +62,13 @@ struct SignUpView: View {
                         email: viewModel.userEmail,
                         password: viewModel.userPassword
                     )
-                    let signUpManager = SignUpManager()
-                    signUpManager.saveProfile(profile: newProfile, apiURL: "http://localhost:3000/auth/signup") { success, token in
+                    viewModel.signUp(profile: newProfile) { success, token in
                         
                         if success, let token = token {
                             TokenManager.shared.saveToken(token)
                             DispatchQueue.main.async {
                                 showHomePage = true
+                                UserDefaults.standard.set(true, forKey: "showProfileDialog")
                             }
                         } else {
                             DispatchQueue.main.async {
@@ -91,7 +90,7 @@ struct SignUpView: View {
 
                 // Error Message (Uncomment if error handling is implemented in the future)
 //                // Error Message
-                if let errorMessage = signUpManager.errorMessage {
+                if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .font(.caption)
