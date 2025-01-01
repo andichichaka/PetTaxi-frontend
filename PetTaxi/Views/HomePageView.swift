@@ -88,48 +88,27 @@ struct HomePageView: View {
                     .background(Color.yellow.opacity(0.2))
                 }
                 
-                if showProfilePictureDialog {
-                    ProfilePictureDialog(isActive: $showProfilePictureDialog) { image in
-                        viewModel.uploadProfilePicture(image: image!) { success in
-                            if success {
-                                showProfilePictureDialog = false
-                            } else {
-                                print("Failed to upload profile picture.")
+                                if showProfilePictureDialog {
+                                    ProfilePictureDialog(isActive: $showProfilePictureDialog) {
+                                        // Action on successful upload
+                                        print("Profile picture uploaded successfully.")
+                                    } skipAction: {
+                                        // Skip action
+                                        print("User skipped profile picture upload.")
+                                    }
+                                }
                             }
-                        }
-                    } skipAction: {
-                        showProfilePictureDialog = false
-                        print("User skipped profile picture upload.")
-                    }
-                                   
-                               }
-                           }
                            .onAppear {
                                viewModel.fetchPosts()
 
-                               // Show dialog after sign-up
                                if UserDefaults.standard.bool(forKey: "showProfileDialog") {
                                    showProfilePictureDialog = true
-                                   UserDefaults.standard.set(false, forKey: "showProfileDialog") // Reset flag
+                                   UserDefaults.standard.set(false, forKey: "showProfileDialog")
                                }
                            }
         }
     }
 }
-
-//ProfilePictureDialog(isActive: $showProfilePictureDialog) { image in
-//    viewModel.uploadProfilePicture(image: image!) { success in
-//        if success {
-//            showProfilePictureDialog = false
-//        } else {
-//            print("Failed to upload profile picture.")
-//        }
-//    }
-//} skipAction: {
-//    showProfilePictureDialog = false
-//    print("User skipped profile picture upload.")
-//}
-
 
 #Preview{
     HomePageView()
