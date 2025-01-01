@@ -88,30 +88,27 @@ struct HomePageView: View {
                     .background(Color.yellow.opacity(0.2))
                 }
                 
-                // Profile Picture Dialog
-                               if showProfilePictureDialog {
-                                   ProfilePictureDialog(isActive: $showProfilePictureDialog) {
-                                       // Action on successful upload
-                                       print("Profile picture uploaded successfully.")
-                                   } skipAction: {
-                                       // Skip action
-                                       print("User skipped profile picture upload.")
-                                   }
-                               }
-                           }
+                                if showProfilePictureDialog {
+                                    ProfilePictureDialog(isActive: $showProfilePictureDialog) {
+                                        // Action on successful upload
+                                        print("Profile picture uploaded successfully.")
+                                    } skipAction: {
+                                        // Skip action
+                                        print("User skipped profile picture upload.")
+                                    }
+                                }
+                            }
                            .onAppear {
                                viewModel.fetchPosts()
 
-                               // Show dialog after sign-up
                                if UserDefaults.standard.bool(forKey: "showProfileDialog") {
                                    showProfilePictureDialog = true
-                                   UserDefaults.standard.set(false, forKey: "showProfileDialog") // Reset flag
+                                   UserDefaults.standard.set(false, forKey: "showProfileDialog")
                                }
                            }
         }
     }
 }
-
 
 #Preview{
     HomePageView()
