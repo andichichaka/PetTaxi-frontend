@@ -54,25 +54,29 @@ final class LogInViewModel: ObservableObject {
     }
     
     func logIn(profile: LogIn, completion: @escaping (Bool, String?) -> Void) {
-            communicationManager.execute(
-                endpoint: .logIn,
-                body: profile,
-                responseType: SignUpResponse.self
-            ) { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let response):
-                        if response.success, let token = response.access_token {
-                            completion(true, token)
-                        } else {
-                            self.errorMessage = response.message ?? "Login failed."
-                            completion(false, nil)
-                        }
-                    case .failure(let error):
-                        self.errorMessage = error.localizedDescription
+        communicationManager.execute(
+            endpoint: .logIn,
+            body: profile,
+            responseType: LoginResponse.self
+        ) { result in
+            DispatchQueue.main.async(execute: {
+                switch result {
+                case .success(let response):
+                    if response.success, let token = response.access_token, let role = response.user?.role {
+                        // Store user role and token
+                        UserDefaults.standard.set(role, forKey: "userRole") // Persist role locally
+                        completion(true, token)
+                    } else {
+                        self.errorMessage = response.message ?? "Login failed."
                         completion(false, nil)
                     }
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    completion(false, nil)
                 }
-            }
+            })
+
         }
+    }
+
 }

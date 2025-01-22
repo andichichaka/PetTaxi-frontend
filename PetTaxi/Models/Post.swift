@@ -11,8 +11,46 @@ struct Post: Identifiable, Codable {
     let id: Int
     let imagesUrl: [String]?
     let description: String
-    let serviceType: String
     let animalType: String
-    let animalSize: String
+    let animalSizes: [String]
     let user: User
+    let services: [Service]
 }
+
+//struct CreatePostRequest: Codable {
+//    let description: String
+//    let serviceTypes: [String]
+//    let animalType: String
+//    let animalSizes: [String]
+//}
+
+struct CreatePostRequest: Codable {
+    let description: String
+    let services: [CreateServiceRequest]
+    let animalType: String
+    let animalSizes: [String]
+}
+
+struct Service: Codable {
+    let postId: Int?
+    let bookings: [Booking]?
+    let serviceType: String
+    let price: Double
+    let unavailableDates: [String]
+    let id: Int?
+}
+
+struct Booking: Codable {
+    let id: Int
+    let serviceId: Int
+    let userId: Int
+    let bookingDate: String
+    let notes: String?
+}
+
+struct CreateServiceRequest: Codable {
+    let serviceType: String
+    var price: Double
+    var unavailableDates: [String]?
+}
+

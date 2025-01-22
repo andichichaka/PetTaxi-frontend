@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 final class CommunicationManager {
     static let shared = CommunicationManager()
@@ -24,6 +25,8 @@ final class CommunicationManager {
             completion(.failure(.invalidURL))
             return
         }
+        
+        print("\(requestURL)")
 
         // Create URLRequest
         var request = URLRequest(url: requestURL)
@@ -71,6 +74,8 @@ final class CommunicationManager {
                 let decodedResponse = try JSONDecoder().decode(T.self, from: data)
                 completion(.success(decodedResponse))
             } catch {
+                print("Failed to decode response: \(error)")
+                print("Raw response: \(String(data: data, encoding: .utf8) ?? "Invalid Data")")
                 completion(.failure(.decodingFailed(error.localizedDescription)))
             }
         }.resume()
@@ -92,9 +97,10 @@ extension CommunicationManager {
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
+        request.httpMethod = endpoint.method.rawValue
         if let token = tokenManager.getToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("\(token)")
         }
 
         let boundary = UUID().uuidString

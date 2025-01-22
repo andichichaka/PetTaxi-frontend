@@ -4,6 +4,8 @@ struct SignUpView: View {
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var focusField: FocusField?
     @State private var showHomePage = false
+    @State private var showVerificationDialog = false
+    @State private var verificationCode = ""
 
     var body: some View {
         NavigationStack {
@@ -62,18 +64,13 @@ struct SignUpView: View {
                         email: viewModel.userEmail,
                         password: viewModel.userPassword
                     )
-                    viewModel.signUp(profile: newProfile) { success, token in
-                        
-                        if success, let token = token {
-                            TokenManager.shared.saveToken(token)
+                    viewModel.signUp(profile: newProfile) { success in
+                        if success {
                             DispatchQueue.main.async {
-                                showHomePage = true
-                                UserDefaults.standard.set(true, forKey: "showProfileDialog")
+                                showVerificationDialog = true
                             }
                         } else {
-                            DispatchQueue.main.async {
-                                print("SignUp failed. Please try again.")
-                            }
+                            print("SignUp failed. Please try again.")
                         }
                     }
                 }) {
@@ -85,11 +82,10 @@ struct SignUpView: View {
                         .cornerRadius(10)
                         .shadow(radius: 3)
                 }
-                .padding(.horizontal)
                 .disabled(!viewModel.isFormValid)
+                .padding(.horizontal)
 
-                // Error Message (Uncomment if error handling is implemented in the future)
-//                // Error Message
+                // Error message
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
@@ -99,12 +95,34 @@ struct SignUpView: View {
                 }
 
                 Spacer()
-
-                Spacer()
             }
             .padding()
+            .fullScreenCover(isPresented: $showVerificationDialog) {
+                VerificationCodeDialog(
+                    isActive: $showVerificationDialog,
+                    verificationCode: $verificationCode,
+                    verifyAction: {
+                        viewModel.verifyEmail(email: viewModel.userEmail, code: verificationCode) { success in
+                            if success {
+                                DispatchQueue.main.async {
+                                    showVerificationDialog = false
+                                    //UserDefaults.standard.set("user", forKey: "userRole")
+                                    showHomePage = true
+                                    UserDefaults.standard.set(true, forKey: "showProfileDialog")
+                                }
+                            } else {
+                                print("Verification failed.")
+                            }
+                        }
+                    },
+                    resendAction: {
+                        // Logic for resending the verification email (optional)
+                    }
+                )
+        }
             .navigationDestination(isPresented: $showHomePage) {
-                HomePageView()
+                NavigationBarView()
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
