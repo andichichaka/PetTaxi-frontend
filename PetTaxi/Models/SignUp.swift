@@ -15,7 +15,18 @@ struct SignUp: Codable {
 
 struct SignUpResponse: Codable {
     let success: Bool
-    let access_token: String?
     let message: String?
     let user: User?
 }
+
+struct VerifyEmail: Codable {
+    let userId: Int
+    let code: String
+}
+
+struct VerifyEmailResponse: Codable {
+    let success: Bool
+    let access_token: String?
+    let message: String?
+}
+

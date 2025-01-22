@@ -143,9 +143,12 @@ final class ProfileViewModel: ObservableObject {
             ) { result in
                 DispatchQueue.main.async {
                     switch result {
-                    case .success(let user):
-                        print("Role submitted successfully: \(user.role)")
-                        completion(true)
+                    case .success(let response):
+                        if let token = response.access_token{
+                            TokenManager.shared.saveToken(token)
+                            print("Role submitted successfully: \(response.role)")
+                            completion(true)
+                        }
                     case .failure(let error):
                         print("Failed to submit role: \(error.localizedDescription)")
                         self.errorMessage = "Failed to submit role: \(error.localizedDescription)"

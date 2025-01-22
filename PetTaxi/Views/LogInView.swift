@@ -78,7 +78,8 @@ struct LogInView: View {
             }
             .padding()
             .navigationDestination(isPresented: $showHomePage) {
-                HomePageView()
+                NavigationBarView()
+                .navigationBarBackButtonHidden(true)
             }
         }
     }

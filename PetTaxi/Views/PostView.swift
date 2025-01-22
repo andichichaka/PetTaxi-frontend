@@ -12,7 +12,7 @@ struct PostView: View {
 
     var body: some View {
         NavigationLink(destination: PostDetailView(post: post)) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
                 // Image or Placeholder
                 if let firstImageUrl = post.imagesUrl?.first, let url = URL(string: firstImageUrl) {
                     AsyncImage(url: url) { phase in
@@ -27,43 +27,31 @@ struct PostView: View {
                                 .frame(height: 200)
                                 .clipped()
                         case .failure:
-                            Image(systemName: "photo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 200)
-                                .foregroundColor(.gray)
-                                .background(Color.yellow.opacity(0.2))
+                            placeholderImage
                         @unknown default:
                             EmptyView()
                         }
                     }
                 } else {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 200)
-                        .foregroundColor(.gray)
-                        .background(Color.yellow.opacity(0.2))
+                    placeholderImage
                 }
 
                 // Post Content
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(post.user.username)
-                        .font(.headline)
-
-                    HStack {
-                        Text(post.serviceType)
+                    HStack{
+                        Text(post.user.username)
+                            .font(.headline)
+                        
+                        Text(post.animalType)
                             .font(.subheadline)
                             .padding(6)
-                            .background(Color.yellow.opacity(0.3))
+                            .background(Color.green.opacity(0.3))
                             .cornerRadius(10)
-
-                        Text("\(post.animalType) • \(post.animalSize)")
-                            .font(.subheadline)
-                            .padding(6)
-                            .background(Color.yellow.opacity(0.3))
-                            .cornerRadius(10)
+                            .frame(alignment: .trailing)
                     }
+
+                    // Services & Sizes
+                    servicesAndSizesSection
 
                     Text(post.description)
                         .font(.body)
@@ -77,6 +65,41 @@ struct PostView: View {
             .cornerRadius(15)
             .shadow(radius: 5)
             .padding(.horizontal)
+        }
+    }
+
+    private var placeholderImage: some View {
+        Image(systemName: "photo")
+            .resizable()
+            .scaledToFit()
+            .frame(height: 200)
+            .foregroundColor(.gray)
+            .background(Color.yellow.opacity(0.2))
+    }
+
+    private var servicesAndSizesSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+//            HStack {
+//                ForEach(post.serviceTypes, id: \.self) { service in
+//                    Text(service)
+//                        .font(.subheadline)
+//                        .padding(6)
+//                        .background(Color.yellow.opacity(0.3))
+//                        .cornerRadius(10)
+//                }
+//            }
+//            .lineLimit(1) // Keep one row for services
+
+            HStack {
+                ForEach(post.animalSizes, id: \.self) { size in
+                    Text(size)
+                        .font(.subheadline)
+                        .padding(6)
+                        .background(Color.blue.opacity(0.3))
+                        .cornerRadius(10)
+                }
+            }
+            .lineLimit(1) // Keep one row for sizes
         }
     }
 }

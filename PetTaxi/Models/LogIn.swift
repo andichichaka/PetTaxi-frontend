@@ -14,7 +14,7 @@ struct LogIn: Codable {
 
 struct LoginResponse: Codable {
     let success: Bool
-    let access_token: String?
     let message: String?
+    let access_token: String?
     let user: User?
 }
