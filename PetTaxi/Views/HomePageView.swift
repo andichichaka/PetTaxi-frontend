@@ -10,8 +10,10 @@ import SwiftUI
 struct HomePageView: View {
     @StateObject private var viewModel = HomePageViewModel()
     @State private var showProfilePictureDialog = false
-        @State private var isUploading = false
-        @State private var uploadErrorMessage: String? = nil
+    @State private var showRoleSelectionDialog = false
+    @State private var isUploading = false
+    @State private var uploadErrorMessage: String? = nil
+    @State private var showSearchFilter = false // State for SearchFilterView
 
     var body: some View {
         NavigationStack {
@@ -19,6 +21,7 @@ struct HomePageView: View {
                 // Background Gradient
                 LinearGradient(gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]), startPoint: .top, endPoint: .bottom)
                     .edgesIgnoringSafeArea(.all)
+                    .disabled(showRoleSelectionDialog)
 
                 VStack {
                     // Top Bar
@@ -29,7 +32,7 @@ struct HomePageView: View {
                             .foregroundColor(.primary)
                         Spacer()
                         Button(action: {
-                            print("Search tapped")
+                            showSearchFilter = true // Show the SearchFilterView
                         }) {
                             Image(systemName: "magnifyingglass")
                                 .font(.title2)
@@ -59,57 +62,50 @@ struct HomePageView: View {
                             .padding(.vertical)
                         }
                     }
-
-                    // Bottom Navigation Bar
-                    HStack {
-                        Button(action: {
-                            print("Home tapped")
-                        }) {
-                            VStack {
-                                Image(systemName: "house.fill")
-                                    .font(.title2)
-                                Text("Home")
-                                    .font(.caption)
-                            }
-                        }
-                        Spacer()
-                        Button(action: {
-                            print("Profile tapped")
-                        }) {
-                            VStack {
-                                Image(systemName: "person.fill")
-                                    .font(.title2)
-                                Text("Profile")
-                                    .font(.caption)
-                            }
-                        }
+                }
+                .disabled(showRoleSelectionDialog)
+                
+                if showProfilePictureDialog {
+                    ProfilePictureDialog(isActive: $showProfilePictureDialog) {
+                        // Action on successful upload
+                        print("Profile picture uploaded successfully.")
+                        showRoleSelectionDialog = true
+                    } skipAction: {
+                        // Skip action
+                        print("User skipped profile picture upload.")
+                        showRoleSelectionDialog = true
                     }
-                    .padding()
-                    .background(Color.yellow.opacity(0.2))
+                    .onDisappear {
+                        showRoleSelectionDialog = true
+                    }
+                }
+                if showRoleSelectionDialog {
+                    RoleSelectionDialog(isActive: $showRoleSelectionDialog)
                 }
                 
-                                if showProfilePictureDialog {
-                                    ProfilePictureDialog(isActive: $showProfilePictureDialog) {
-                                        // Action on successful upload
-                                        print("Profile picture uploaded successfully.")
-                                    } skipAction: {
-                                        // Skip action
-                                        print("User skipped profile picture upload.")
-                                    }
-                                }
-                            }
-                           .onAppear {
-                               viewModel.fetchPosts()
+                if showSearchFilter {
+                    SearchFilterView(isActive: $showSearchFilter)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(
+                            Color.black.opacity(0.3)
+                                .edgesIgnoringSafeArea(.all)
+                        )
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
+            }
+            .onAppear {
+                viewModel.fetchPosts()
 
-                               if UserDefaults.standard.bool(forKey: "showProfileDialog") {
-                                   showProfilePictureDialog = true
-                                   UserDefaults.standard.set(false, forKey: "showProfileDialog")
-                               }
-                           }
+                if UserDefaults.standard.bool(forKey: "showProfileDialog") {
+                    showProfilePictureDialog = true
+                    UserDefaults.standard.set(false, forKey: "showProfileDialog")
+                }
+            }
         }
     }
 }
 
-#Preview{
+#Preview {
     HomePageView()
 }

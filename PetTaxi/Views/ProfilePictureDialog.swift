@@ -10,13 +10,14 @@ import PhotosUI
 
 struct ProfilePictureDialog: View {
     @Binding var isActive: Bool
-    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
     @State private var isUploading = false
     @State private var errorMessage: String?
-    
-    let action: () -> Void // Completion action after a successful upload
-    let skipAction: () -> Void // Skip action if the user decides not to upload
+    @StateObject private var viewModel = ProfileViewModel()
+
+    let action: () -> Void
+    let skipAction: () -> Void
 
     private let communicationManager = CommunicationManager.shared
 
@@ -56,7 +57,7 @@ struct ProfilePictureDialog: View {
                         )
                 }
 
-                PhotosPicker(selection: $selectedItems, matching: .images) {
+                PhotosPicker(selection: $selectedItem, matching: .images) {
                     Text("Choose Image")
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -64,7 +65,7 @@ struct ProfilePictureDialog: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .onChange(of: selectedItems) { _ in
+                .onChange(of: selectedItem) { _ in
                     Task {
                         await loadSelectedImage()
                     }
@@ -88,13 +89,14 @@ struct ProfilePictureDialog: View {
                     .cornerRadius(10)
 
                     Button("Continue") {
-                        guard let selectedImage = selectedImage,
-                              let imageData = selectedImage.jpegData(compressionQuality: 0.8) else {
+                        guard let selectedImage = selectedImage else {
                             errorMessage = "Please select an image"
                             return
                         }
                         isUploading = true
-                        uploadProfilePicture(imageData: imageData)
+                        viewModel.profilePicture = selectedImage
+                        viewModel.uploadProfilePicture()
+                        close()
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -118,34 +120,12 @@ struct ProfilePictureDialog: View {
     }
 
     private func loadSelectedImage() async {
-        guard let item = selectedItems.first else { return }
+        guard let item = selectedItem else { return }
         if let data = try? await item.loadTransferable(type: Data.self),
            let uiImage = UIImage(data: data) {
             selectedImage = uiImage
         } else {
             errorMessage = "Failed to load image. Please try again."
-        }
-    }
-
-    private func uploadProfilePicture(imageData: Data) {
-        let endpoint = Endpoint.custom("profile/upload-profile-pic") // Adjust this to the actual endpoint for uploading profile pictures
-        communicationManager.uploadFile(
-            endpoint: endpoint,
-            fileData: imageData,
-            fieldName: "file",
-            fileName: "profile_picture.jpg",
-            mimeType: "image/jpeg"
-        ) { result in
-            DispatchQueue.main.async {
-                isUploading = false
-                switch result {
-                case .success:
-                    action()
-                    close()
-                case .failure(let error):
-                    errorMessage = "Upload failed: \(error.localizedDescription)"
-                }
-            }
         }
     }
 }
