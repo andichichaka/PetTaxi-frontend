@@ -1,10 +1,3 @@
-//
-//  PostDetailView.swift
-//  PetTaxi
-//
-//  Created by Andrey on 28.12.24.
-//
-
 import SwiftUI
 
 struct PostDetailView: View {
@@ -52,11 +45,15 @@ struct PostDetailView: View {
                         .font(.body)
                         .foregroundColor(.secondary)
 
-                    // "Book Now" Button
-                    Button(action: {
-                        print("Book Now tapped")
-                    }) {
-                        Text("Book Now")
+                    // "Request Booking Now" Button
+                    NavigationLink(
+                        destination: BookingView(
+                            viewModel: BookingViewModel(),
+                            services: post.services,
+                            unavailableDates: collectUnavailableDates(for: post.services)
+                        )
+                    ) {
+                        Text("Request Booking Now")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.yellow)
@@ -75,9 +72,31 @@ struct PostDetailView: View {
                 reviewsSection
             }
         }
-        .background(LinearGradient(gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]), startPoint: .top, endPoint: .bottom).edgesIgnoringSafeArea(.all))
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]),
+                startPoint: .top,
+                endPoint: .bottom
+            ).edgesIgnoringSafeArea(.all)
+        )
         .navigationTitle("Service Details")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func collectUnavailableDates(for services: [Service]) -> [Date] {
+        let formatter = ISO8601DateFormatter()
+        var unavailableDates: [Date] = []
+
+        for service in services {
+            // Properly handle optional `unavailableDates`
+            let parsedDates = service.unavailableDates.compactMap { dateString -> Date? in
+                return formatter.date(from: dateString ?? "")
+            } ?? []
+
+            unavailableDates.append(contentsOf: parsedDates)
+        }
+
+        return unavailableDates
     }
 
     private var placeholderImage: some View {
@@ -91,42 +110,37 @@ struct PostDetailView: View {
 
     private var servicesAndSizesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack{
-                Text("Services")
-                    .font(.headline)
-                
-                Text(post.animalType)
-                    .font(.subheadline)
-                    .padding(6)
-                    .background(Color.green.opacity(0.3))
-                    .cornerRadius(10)
-                    
-            }
+            Text("Services")
+                .font(.headline)
 
-//            HStack {
-//                ForEach(post.serviceTypes, id: \.self) { service in
-//                    Text(service)
-//                        .font(.subheadline)
-//                        .padding(6)
-//                        .background(Color.yellow.opacity(0.3))
-//                        .cornerRadius(10)
-//                }
-//            }
-//            .lineLimit(1)
+            ForEach(post.services, id: \.id) { service in
+                HStack {
+                    Text(service.serviceType.capitalized)
+                        .font(.subheadline)
+
+                    Spacer()
+
+                    Text("$\(service.price, specifier: "%.2f")")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(6)
+                .background(Color.yellow.opacity(0.3))
+                .cornerRadius(10)
+            }
 
             Text("Sizes")
                 .font(.headline)
 
             HStack {
                 ForEach(post.animalSizes, id: \.self) { size in
-                    Text(size)
+                    Text(size.capitalized)
                         .font(.subheadline)
                         .padding(6)
                         .background(Color.blue.opacity(0.3))
                         .cornerRadius(10)
                 }
             }
-            .lineLimit(1)
         }
     }
 

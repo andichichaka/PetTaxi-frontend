@@ -19,6 +19,7 @@ enum Endpoint {
     case getProfile
     case filterPosts(String)
     case verifyEmail
+    case createBooking
     case custom(String) // For dynamic or ad-hoc URLs
 
     // Computed property for the base URL
@@ -51,6 +52,8 @@ enum Endpoint {
             return "\(baseURL)/posts/search?\(filter)"
         case .verifyEmail:
             return "\(baseURL)/auth/verify-email"
+        case .createBooking:
+                return "\(baseURL)/bookings/create"
         case .custom(let customPath):
             return "\(baseURL)/\(customPath)"
         }
@@ -58,7 +61,7 @@ enum Endpoint {
 
     var method: HTTPMethod {
             switch self {
-            case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail:
+            case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking:
                 return .POST
             case .fetchPosts, .getProfile, .filterPosts:
                 return .GET
