@@ -100,7 +100,7 @@ final class ProfileViewModel: ObservableObject {
             let updateProfile = UpdateProfile(
                 email: email,
                 username: username,
-                description: description!
+                description: description ?? ""
             )
 
             isLoading = true

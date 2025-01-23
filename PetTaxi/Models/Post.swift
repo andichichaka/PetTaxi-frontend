@@ -32,12 +32,11 @@ struct CreatePostRequest: Codable {
 }
 
 struct Service: Codable {
-    let postId: Int?
+    let id: Int?
     let bookings: [Booking]?
     let serviceType: String
     let price: Double
-    let unavailableDates: [String]
-    let id: Int?
+    let unavailableDates: [String?]
 }
 
 struct Booking: Codable {

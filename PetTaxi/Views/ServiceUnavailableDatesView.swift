@@ -16,7 +16,10 @@ struct ServiceUnavailableDatesView: View {
                 .font(.headline)
                 .multilineTextAlignment(.center)
 
-            CalendarView(selectedDates: $selectedDates)
+            CalendarView(
+                selectedDates: $selectedDates,
+                unavailableDates: loadUnavailableDatesForCurrentService()
+            )
 
             if let errorMessage = errorMessage {
                 Text(errorMessage)
@@ -79,7 +82,6 @@ struct ServiceUnavailableDatesView: View {
         viewModel.services[currentServiceIndex].unavailableDates = unavailableDates
     }
 
-
     private func loadDatesForCurrentService() {
         let formatter = ISO8601DateFormatter()
         if let dates = viewModel.services[currentServiceIndex].unavailableDates {
@@ -89,6 +91,13 @@ struct ServiceUnavailableDatesView: View {
         }
     }
 
+    private func loadUnavailableDatesForCurrentService() -> [Date] {
+        let formatter = ISO8601DateFormatter()
+        if let unavailableDates = viewModel.services[currentServiceIndex].unavailableDates {
+            return unavailableDates.compactMap { formatter.date(from: $0) }
+        }
+        return []
+    }
 
     private func submitPost() {
         viewModel.createPost { success in
