@@ -20,7 +20,6 @@ final class CommunicationManager {
         responseType: T.Type,
         completion: @escaping (Result<T, CommunicationError>) -> Void
     ) {
-        // Validate URL
         guard let requestURL = URL(string: endpoint.url) else {
             completion(.failure(.invalidURL))
             return
@@ -28,17 +27,14 @@ final class CommunicationManager {
         
         print("\(requestURL)")
 
-        // Create URLRequest
         var request = URLRequest(url: requestURL)
         request.httpMethod = endpoint.method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // Add Bearer Token if available
         if let token = tokenManager.getToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
-        // Attach body if provided
         if let body = body {
             do {
                 let jsonData = try JSONEncoder().encode(body)
@@ -49,22 +45,18 @@ final class CommunicationManager {
             }
         }
 
-        // Perform the request
         URLSession.shared.dataTask(with: request) { data, response, error in
-            // Handle network errors
             if let error = error {
                 completion(.failure(.networkError(error.localizedDescription)))
                 return
             }
 
-            // Handle HTTP response status codes
             if let httpResponse = response as? HTTPURLResponse,
                !(200...299).contains(httpResponse.statusCode) {
                 completion(.failure(.httpError(httpResponse.statusCode)))
                 return
             }
 
-            // Decode response data
             guard let data = data else {
                 completion(.failure(.noData))
                 return
@@ -121,6 +113,52 @@ extension CommunicationManager {
             }
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                completion(.failure(.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)))
+                return
+            }
+            
+            completion(.success(()))
+        }.resume()
+    }
+    
+    func uploadMultipleFiles(
+        endpoint: Endpoint,
+        files: [(data: Data, fieldName: String, fileName: String, mimeType: String)],
+        completion: @escaping (Result<Void, CommunicationError>) -> Void
+    ) {
+        guard let url = URL(string: endpoint.url) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = endpoint.method.rawValue
+        if let token = tokenManager.getToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("\(token)")
+        }
+        
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        for file in files {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n".data(using: .utf8)!)
+            body.append("Content-Type: \(file.mimeType)\r\n\r\n".data(using: .utf8)!)
+            body.append(file.data)
+            body.append("\r\n".data(using: .utf8)!)
+        }
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        request.httpBody = body
+        
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                completion(.failure(.networkError(error.localizedDescription)))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
                 completion(.failure(.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)))
                 return
             }

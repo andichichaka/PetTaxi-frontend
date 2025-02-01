@@ -57,9 +57,9 @@ struct LogInView: View {
                     Text("Login")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(viewModel.isFormFilled ? Color.yellow : Color.gray)
+                        .background(viewModel.isFormFilled ? Color.color3 : Color.gray)
                         .foregroundColor(.white)
-                        .cornerRadius(10)
+                        .cornerRadius(25)
                         .shadow(radius: 3)
                 }
                 .padding(.horizontal)

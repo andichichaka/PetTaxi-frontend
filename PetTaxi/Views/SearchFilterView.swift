@@ -1,10 +1,3 @@
-//
-//  SearchFilterView.swift
-//  PetTaxi
-//
-//  Created by Andrey on 15.01.25.
-//
-
 import SwiftUI
 
 struct SearchFilterView: View {
@@ -22,7 +15,7 @@ struct SearchFilterView: View {
             ZStack {
                 // Background
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]),
+                    gradient: Gradient(colors: [Color.color2.opacity(0.2), Color.white]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -37,6 +30,7 @@ struct SearchFilterView: View {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
                             TextField("Keywords...", text: $viewModel.keyword)
+                                .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
                                 .textFieldStyle(PlainTextFieldStyle())
                         }
                         .padding()
@@ -48,8 +42,8 @@ struct SearchFilterView: View {
                             // Service Types
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Service Types")
-                                    .font(.headline)
-                                    .foregroundColor(.gray)
+                                    .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                                    .foregroundColor(.color) // Dark Green
                                 ScrollView {
                                     VStack(alignment: .leading, spacing: 10) {
                                         ForEach(serviceTypeOptions, id: \.self) { type in
@@ -64,6 +58,8 @@ struct SearchFilterView: View {
                                                 }
                                             )) {
                                                 Text(type)
+                                                    .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                                                    .foregroundColor(.color) // Dark Green
                                             }
                                             .toggleStyle(CheckboxToggleStyle())
                                         }
@@ -76,12 +72,15 @@ struct SearchFilterView: View {
                                 // Animal Type
                                 VStack(alignment: .leading, spacing: 10) {
                                     Text("Animal Type")
-                                        .font(.headline)
-                                        .foregroundColor(.gray)
+                                        .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                                        .foregroundColor(.color) // Dark Green
                                     Picker("Select type", selection: $viewModel.animalType) {
                                         Text("Select type").tag("")
+                                            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
                                         ForEach(animalTypeOptions, id: \.self) { type in
-                                            Text(type).tag(type)
+                                            Text(type)
+                                                .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                                                .tag(type)
                                         }
                                     }
                                     .pickerStyle(MenuPickerStyle())
@@ -93,8 +92,8 @@ struct SearchFilterView: View {
                                 // Animal Sizes
                                 VStack(alignment: .leading, spacing: 10) {
                                     Text("Animal Sizes")
-                                        .font(.headline)
-                                        .foregroundColor(.gray)
+                                        .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                                        .foregroundColor(.color) // Dark Green
                                     ScrollView {
                                         VStack(alignment: .leading, spacing: 10) {
                                             ForEach(animalSizeOptions, id: \.self) { size in
@@ -109,6 +108,8 @@ struct SearchFilterView: View {
                                                     }
                                                 )) {
                                                     Text(size)
+                                                        .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                                                        .foregroundColor(.color) // Dark Green
                                                 }
                                                 .toggleStyle(CheckboxToggleStyle())
                                             }
@@ -134,10 +135,10 @@ struct SearchFilterView: View {
                                 }
                             }) {
                                 Text("Search")
-                                    .bold()
+                                    .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.yellow)
+                                    .background(Color.color3) // Mint Green
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
                                     .shadow(radius: 2)
@@ -146,11 +147,11 @@ struct SearchFilterView: View {
                                 viewModel.clearFilters()
                             }) {
                                 Text("Clear")
-                                    .bold()
+                                    .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.white)
-                                    .foregroundColor(.gray)
+                                    .background(Color.color2.opacity(0.3)) // Light Green
+                                    .foregroundColor(.color) // Dark Green
                                     .cornerRadius(10)
                                     .shadow(radius: 2)
                             }
@@ -169,10 +170,10 @@ struct SearchFilterView: View {
                         isActive = false
                     }) {
                         Text("Close")
-                            .bold()
+                            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.red)
+                            .background(Color.color) // Dark Green
                             .foregroundColor(.white)
                             .cornerRadius(10)
                             .shadow(radius: 2)
@@ -187,11 +188,22 @@ struct SearchFilterView: View {
         }
     }
 }
-    
-    // MARK: - Preview
-    struct SearchFilterView_Previews: PreviewProvider {
-        static var previews: some View {
-            SearchFilterView(isActive: .constant(true))
+
+struct CheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            Spacer()
+            Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                .foregroundColor(.color3) // Mint Green
+                .onTapGesture { configuration.isOn.toggle() }
         }
+    }
 }
 
+// MARK: - Preview
+struct SearchFilterView_Previews: PreviewProvider {
+    static var previews: some View {
+        SearchFilterView(isActive: .constant(true))
+    }
+}

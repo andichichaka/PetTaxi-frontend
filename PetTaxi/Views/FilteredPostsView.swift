@@ -1,17 +1,3 @@
-//
-//  FilteredPostsView.swift
-//  PetTaxi
-//
-//  Created by Andrey on 16.01.25.
-//
-
-//
-//  FilteredPostsView.swift
-//  PetTaxi
-//
-//  Created by Andrey on 16.01.25.
-//
-
 import SwiftUI
 
 struct FilteredPostsView: View {
@@ -19,58 +5,72 @@ struct FilteredPostsView: View {
     @ObservedObject var viewModel: SearchFilterViewModel
 
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             ZStack {
-                // Background Gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .edgesIgnoringSafeArea(.all)
-                
-                VStack(spacing: 0) {
-                    // Top Bar
+                // Live Blurry Background
+                LiveBlurryBackground()
+                    .edgesIgnoringSafeArea(.all)
+
+                // Post List (Scrolls behind the top bar)
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // Add padding to the top to account for the floating top bar
+                        Spacer()
+                            .frame(height: 120) // Adjust this value to match the top bar height
+
+                        // Posts
+                        if viewModel.filteredPosts.isEmpty {
+                            Text("No posts match your filters.")
+                                .font(.custom("Vollkorn-Medium", size: 18)) // Custom Font
+                                .foregroundColor(.white)
+                                .padding()
+                        } else {
+                            ForEach(viewModel.filteredPosts) { post in
+                                PostView(post: post)
+                            }
+                        }
+                    }
+                    .padding(.vertical)
+                }
+
+                // Floating Top Bar
+                VStack {
                     HStack {
+                        // Back Button
                         Button(action: {
                             isActive = false
                         }) {
                             Image(systemName: "arrow.backward")
                                 .font(.title2)
+                                .foregroundColor(.white)
                                 .padding(.trailing, 8)
                         }
-                        
+
+                        // Title
                         Text("Search Results")
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundColor(.primary)
+                            .font(.custom("LilitaOne", size: 28)) // Custom Font
+                            .foregroundColor(.white)
+
                         Spacer()
                     }
-                    .padding()
-                    .background(Color.yellow.opacity(0.2))
-                    
-                    // Results Content
-                    if viewModel.filteredPosts.isEmpty {
-                        VStack {
-                            Spacer()
-                            Text("No posts match your filters.")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                                .padding()
-                            Spacer()
-                        }
-                    } else {
-                        ScrollView {
-                            VStack(spacing: 16) {
-                                ForEach(viewModel.filteredPosts) { post in
-                                    PostView(post: post)
-                                }
-                            }
-                            .padding(.vertical)
-                        }
-                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
+                    .background(Color.black.opacity(0.7))
+                    .cornerRadius(15)
+                    .padding(.horizontal)
+                    .padding(.top, 5)
+                    .zIndex(1) // Ensure the top bar stays above the posts
+
+                    Spacer() // Push the top bar to the top
                 }
             }
         }
     }
+}
+
+#Preview {
+    FilteredPostsView(
+        isActive: .constant(true),
+        viewModel: SearchFilterViewModel()
+    )
 }
