@@ -20,6 +20,9 @@ enum Endpoint {
     case filterPosts(String)
     case verifyEmail
     case createBooking
+    case bookingApprove(Int)
+    case updatePostImages(Int)
+    case deletePost(Int)
     case custom(String) // For dynamic or ad-hoc URLs
 
     // Computed property for the base URL
@@ -54,6 +57,12 @@ enum Endpoint {
             return "\(baseURL)/auth/verify-email"
         case .createBooking:
                 return "\(baseURL)/bookings/create"
+        case .bookingApprove(let id):
+            return "\(baseURL)/bookings/approve/\(id)"
+        case .updatePostImages(let id):
+            return "\(baseURL)/posts/\(id)/images"
+        case .deletePost(let id):
+            return "\(baseURL)/posts/delete/\(id)"
         case .custom(let customPath):
             return "\(baseURL)/\(customPath)"
         }
@@ -63,12 +72,14 @@ enum Endpoint {
             switch self {
             case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking:
                 return .POST
-            case .fetchPosts, .getProfile, .filterPosts:
+            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove:
                 return .GET
             case .updatePic, .updateProfile:
                 return .PUT
-            case .setRole:
+            case .setRole, .updatePostImages:
                 return .PATCH
+            case .deletePost:
+                return .DELETE
             case .custom:
                 return .PUT
             }

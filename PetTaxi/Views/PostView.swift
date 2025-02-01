@@ -6,200 +6,103 @@
 ////
 //
 import SwiftUI
-//
-//struct PostView: View {
-//    let post: Post
-//
-//    var body: some View {
-//        NavigationLink(destination: PostDetailView(post: post)) {
-//            VStack(alignment: .leading, spacing: 12) {
-//                // Image or Placeholder
-//                if let firstImageUrl = post.imagesUrl?.first, let url = URL(string: firstImageUrl) {
-//                    AsyncImage(url: url) { phase in
-//                        switch phase {
-//                        case .empty:
-//                            ProgressView()
-//                                .frame(height: 200)
-//                        case .success(let image):
-//                            image
-//                                .resizable()
-//                                .scaledToFill()
-//                                .frame(height: 200)
-//                                .clipped()
-//                        case .failure:
-//                            placeholderImage
-//                        @unknown default:
-//                            EmptyView()
-//                        }
-//                    }
-//                } else {
-//                    placeholderImage
-//                }
-//
-//                // Post Content
-//                VStack(alignment: .leading, spacing: 8) {
-//                    HStack{
-//                        Text(post.user.username)
-//                            .font(.headline)
-//                        
-//                        Text(post.animalType)
-//                            .font(.subheadline)
-//                            .padding(6)
-//                            .background(Color.green.opacity(0.3))
-//                            .cornerRadius(10)
-//                            .frame(alignment: .trailing)
-//                    }
-//
-//                    // Services & Sizes
-//                    servicesAndSizesSection
-//
-//                    Text(post.description)
-//                        .font(.body)
-//                        .lineLimit(2)
-//                        .foregroundColor(.secondary)
-//                }
-//                .padding()
-//            }
-//            .frame(maxWidth: .infinity) // Consistent width
-//            .background(Color.white) // Background for each post
-//            .cornerRadius(15)
-//            .shadow(radius: 5)
-//            .padding(.horizontal)
-//        }
-//    }
-//
-//    private var placeholderImage: some View {
-//        Image(systemName: "photo")
-//            .resizable()
-//            .scaledToFit()
-//            .frame(height: 200)
-//            .foregroundColor(.gray)
-//            .background(Color.yellow.opacity(0.2))
-//    }
-//
-//    private var servicesAndSizesSection: some View {
-//        VStack(alignment: .leading, spacing: 4) {
-//            HStack {
-//                ForEach(post.services, id: \.self) { service in
-//                    Text(service.serviceType)
-//                        .font(.subheadline)
-//                        .padding(6)
-//                        .background(Color.yellow.opacity(0.3))
-//                        .cornerRadius(10)
-//                }
-//            }
-//            .lineLimit(1) // Keep one row for services
-//
-//            HStack {
-//                ForEach(post.animalSizes, id: \.self) { size in
-//                    Text(size)
-//                        .font(.subheadline)
-//                        .padding(6)
-//                        .background(Color.blue.opacity(0.3))
-//                        .cornerRadius(10)
-//                }
-//            }
-//            .lineLimit(1) // Keep one row for sizes
-//        }
-//    }
-//}
 
 struct PostView: View {
     let post: Post
-
+    
     var body: some View {
-        NavigationLink(destination: PostDetailView(post: post)) {
-            VStack(alignment: .leading, spacing: 12) {
-                // Image or Placeholder
-                if let firstImageUrl = post.imagesUrl?.first, let url = URL(string: firstImageUrl) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(height: 200)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 200)
-                                .clipped()
-                        case .failure:
-                            placeholderImage
-                        @unknown default:
-                            EmptyView()
+        NavigationStack {
+            NavigationLink(destination: PostDetailView(post: post, viewModel: BookingViewModel(animalType: post.animalType))) {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Image or Placeholder
+                    if let firstImageUrl = post.imagesUrl?.first, let url = URL(string: firstImageUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(height: 200)
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 200)
+                                    .clipped()
+                            case .failure:
+                                randomDefaultImage
+                            @unknown default:
+                                EmptyView()
+                            }
                         }
+                    } else {
+                        randomDefaultImage
                     }
-                } else {
-                    placeholderImage
-                }
-
-                // Post Content
-                VStack(alignment: .leading, spacing: 8) {
-                    // User and Animal Type
-                    HStack {
-                        Text(post.user.username)
-                            .font(.headline)
+                    
+                    // Post Content
+                    VStack(alignment: .leading, spacing: 8) {
+                        // User and Animal Type
+                        HStack {
+                            Text(post.user?.username ?? "Unknown User")
+                                .font(.custom("Vollkorn-Bold", size: 16)) // Custom Font
+                                .foregroundColor(.black)
+                            
+                            Spacer()
+                            
+                            Text(post.animalType.capitalized)
+                                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                                .padding(6)
+                                .background(Color.color3.opacity(0.3)) // Mint Green
+                                .cornerRadius(10)
+                        }
                         
-                        Spacer()
+                        // Services (Vertical List)
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(post.services, id: \.id) { service in
+                                Text("\(service.serviceType.capitalized) ($\(service.price, specifier: "%.2f"))")
+                                    .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                                    .padding(6)
+                                    .background(Color.color3.opacity(0.3)) // Light Green
+                                    .cornerRadius(10)
+                            }
+                        }
+                        .padding(.vertical, 4)
                         
-                        Text(post.animalType.capitalized)
-                            .font(.subheadline)
-                            .padding(6)
-                            .background(Color.green.opacity(0.3))
-                            .cornerRadius(10)
+                        // Animal Sizes
+                        HStack {
+                            ForEach(post.animalSizes, id: \.self) { size in
+                                Text(size.capitalized)
+                                    .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                                    .padding(6)
+                                    .background(Color.color.opacity(0.3)) // Dark Green
+                                    .cornerRadius(10)
+                            }
+                        }
+                        
+                        // Description (Truncated to 3 Lines)
+                        Text(post.description)
+                            .font(.custom("Vollkorn", size: 14)) // Custom Font
+                            .lineLimit(3) // Truncate to 3 lines
+                            .truncationMode(.tail) // Add ... at the end
+                            .foregroundColor(.black.opacity(0.7))
                     }
-
-                    // Services & Sizes
-                    servicesAndSizesSection
-
-                    Text(post.description)
-                        .font(.body)
-                        .lineLimit(2)
-                        .foregroundColor(.secondary)
+                    .padding()
                 }
-                .padding()
+                .frame(maxWidth: .infinity) // Consistent width
+                .background(Color.white) // Background for each post
+                .cornerRadius(15)
+                .shadow(radius: 5)
+                .padding(.horizontal)
             }
-            .frame(maxWidth: .infinity) // Consistent width
-            .background(Color.white) // Background for each post
-            .cornerRadius(15)
-            .shadow(radius: 5)
-            .padding(.horizontal)
         }
     }
-
-    private var placeholderImage: some View {
-        Image(systemName: "photo")
+    
+    // Random Default Image
+    private var randomDefaultImage: some View {
+        let defaultImages = ["def1", "def2", "def3", "def4", "def5"]
+        let randomImage = defaultImages.randomElement() ?? "def1"
+        return Image(randomImage)
             .resizable()
-            .scaledToFit()
+            .scaledToFill()
             .frame(height: 200)
-            .foregroundColor(.gray)
-            .background(Color.yellow.opacity(0.2))
-    }
-
-    private var servicesAndSizesSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                ForEach(post.services, id: \.id) { service in
-                    Text("\(service.serviceType.capitalized) ($\(service.price, specifier: "%.2f"))")
-                        .font(.subheadline)
-                        .padding(6)
-                        .background(Color.yellow.opacity(0.3))
-                        .cornerRadius(10)
-                }
-            }
-            .lineLimit(1) // Keep one row for services
-
-            HStack {
-                ForEach(post.animalSizes, id: \.self) { size in
-                    Text(size.capitalized)
-                        .font(.subheadline)
-                        .padding(6)
-                        .background(Color.blue.opacity(0.3))
-                        .cornerRadius(10)
-                }
-            }
-            .lineLimit(1) // Keep one row for sizes
-        }
+            .clipped()
     }
 }
-

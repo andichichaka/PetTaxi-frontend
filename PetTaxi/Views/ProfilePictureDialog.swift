@@ -31,12 +31,12 @@ struct ProfilePictureDialog: View {
 
             VStack(spacing: 20) {
                 Text("Welcome! 👋")
-                    .font(.title2)
+                    .font(.custom("Vollkorn-Bold", size: 25))
                     .bold()
                     .padding()
 
                 Text("Let's start by adding a profile picture to personalize your account.")
-                    .font(.body)
+                    .font(.custom("Vollkorn-Medium", size: 18))
                     .multilineTextAlignment(.center)
 
                 if let selectedImage = selectedImage {
@@ -45,7 +45,7 @@ struct ProfilePictureDialog: View {
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 100, height: 100)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.yellow, lineWidth: 4))
+                        .overlay(Circle().stroke(Color.color2, lineWidth: 4))
                 } else {
                     Circle()
                         .fill(Color.gray.opacity(0.2))
@@ -61,7 +61,7 @@ struct ProfilePictureDialog: View {
                     Text("Choose Image")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.yellow)
+                        .background(Color.color2)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
@@ -100,7 +100,7 @@ struct ProfilePictureDialog: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(selectedImage != nil ? Color.yellow : Color.gray)
+                    .background(selectedImage != nil ? Color.color3 : Color.gray)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                     .disabled(selectedImage == nil || isUploading)
@@ -128,4 +128,8 @@ struct ProfilePictureDialog: View {
             errorMessage = "Failed to load image. Please try again."
         }
     }
+}
+
+#Preview{
+    ProfilePictureDialog(isActive: .constant(true), action: {}, skipAction: {})
 }

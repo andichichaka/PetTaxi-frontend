@@ -9,5 +9,6 @@ struct Profile: Codable {
     let username: String
     let email: String
     let description: String?
-    let profilePicture: String? // URL for the profile picture
+    let profilePicture: String?
+    let posts: [Post]?
 }

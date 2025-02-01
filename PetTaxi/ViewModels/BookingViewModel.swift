@@ -7,6 +7,16 @@ final class BookingViewModel: ObservableObject {
     @Published var notes: String = ""
     @Published var errorMessage: String?
     @Published var isSubmitting = false
+    
+    @Published var isBookingActive: Bool = false
+    @Published var isDateSelectionActive: Bool = false
+    @Published var isNotedActive: Bool = false
+    
+    let animalType: String
+    
+    init(animalType: String) {
+        self.animalType = animalType
+    }
 
     private let communicationManager = CommunicationManager.shared
 
@@ -21,7 +31,7 @@ final class BookingViewModel: ObservableObject {
         // Prepare booking request
         let request = CreateBookingRequest(
             serviceId: serviceId,
-            animalType: "Dog", // Replace with actual animal type if needed
+            animalType: animalType.lowercased(),
             animalSize: selectedAnimalSize?.lowercased() ?? "unknown",
             bookingDates: dates,
             notes: notes

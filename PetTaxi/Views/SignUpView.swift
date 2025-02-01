@@ -77,9 +77,9 @@ struct SignUpView: View {
                     Text("Sign Up")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(viewModel.isFormValid ? Color.yellow : Color.gray)
+                        .background(viewModel.isFormValid ? Color.color3 : Color.gray)
                         .foregroundColor(.white)
-                        .cornerRadius(10)
+                        .cornerRadius(25)
                         .shadow(radius: 3)
                 }
                 .disabled(!viewModel.isFormValid)
@@ -114,9 +114,6 @@ struct SignUpView: View {
                                 print("Verification failed.")
                             }
                         }
-                    },
-                    resendAction: {
-                        // Logic for resending the verification email (optional)
                     }
                 )
         }

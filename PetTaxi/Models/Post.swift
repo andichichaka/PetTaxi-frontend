@@ -9,12 +9,12 @@ import Foundation
 
 struct Post: Identifiable, Codable {
     let id: Int
-    let imagesUrl: [String]?
-    let description: String
+    var imagesUrl: [String]?
+    var description: String
     let animalType: String
     let animalSizes: [String]
-    let user: User
-    let services: [Service]
+    let user: User?
+    var services: [Service]
 }
 
 //struct CreatePostRequest: Codable {
@@ -35,17 +35,18 @@ struct Service: Codable {
     let id: Int?
     let bookings: [Booking]?
     let serviceType: String
-    let price: Double
-    let unavailableDates: [String?]
+    var price: Double
+    var unavailableDates: [String?]
+    let post: Post?
 }
 
-struct Booking: Codable {
-    let id: Int
-    let serviceId: Int
-    let userId: Int
-    let bookingDate: String
-    let notes: String?
-}
+//struct Booking: Codable {
+//    let id: Int
+//    let serviceId: Int
+//    let userId: Int
+//    let bookingDate: String
+//    let notes: String?
+//}
 
 struct CreateServiceRequest: Codable {
     let serviceType: String
@@ -53,3 +54,6 @@ struct CreateServiceRequest: Codable {
     var unavailableDates: [String]?
 }
 
+struct DeletePostResponse: Codable {
+    let message: String
+}
