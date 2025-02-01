@@ -1,10 +1,3 @@
-//
-//  ProfilePage.swift
-//  PetTaxi
-//
-//  Created by Andrey on 2.01.25.
-//
-
 import SwiftUI
 import PhotosUI
 
@@ -15,21 +8,21 @@ struct ProfilePage: View {
     @State private var showConfirmationDialog = false // For confirmation dialog
     @State private var pendingProfilePicture: UIImage? = nil // Temp profile picture
     @State private var backupProfile: ProfileBackup? = nil // Backup for unsaved changes
+    @State private var selectedPost: Post? // For editing a post
+    @State private var showEditPostView = false
 
     var body: some View {
         ZStack {
-            // Background
-            LinearGradient(
-                gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .edgesIgnoringSafeArea(.all)
+            // Live Blurry Background
+            LiveBlurryBackground()
 
             if viewModel.isLoading {
                 ProgressView("Loading...")
+                    .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                    .foregroundColor(.color) // Dark Green
             } else if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
+                    .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -37,121 +30,79 @@ struct ProfilePage: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         // Profile Picture Section
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 128, height: 128)
-                                .shadow(radius: 10)
+                        profilePictureSection
 
-                            if let profileImage = viewModel.profilePicture {
-                                Image(uiImage: profileImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 128, height: 128)
-                                    .clipShape(Circle())
-                            } else {
-                                Image(systemName: "person.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 60, height: 60)
-                                    .foregroundColor(.gray)
-                            }
+                        // Edit Info Button
+                        editInfoButton
 
-                            // PhotosPicker Button
-                            PhotosPicker(selection: $selectedItem, matching: .images) {
-                                Circle()
-                                    .fill(Color.yellow)
-                                    .frame(width: 36, height: 36)
-                                    .overlay(
-                                        Image(systemName: "camera.fill")
-                                            .foregroundColor(.white)
-                                    )
-                                    .shadow(radius: 5)
-                            }
-                            .offset(x: 45, y: 45)
-                            .onChange(of: selectedItem) { newItem in
-                                if let newItem = newItem {
-                                    Task {
-                                        if let data = try? await newItem.loadTransferable(type: Data.self),
-                                           let uiImage = UIImage(data: data) {
-                                            pendingProfilePicture = uiImage
-                                            showConfirmationDialog = true
+                        // Profile Info Fields
+                        profileInfoFields
+
+                        // Save Profile Button
+                        if isEditingInfo {
+                            saveProfileButton
+                        }
+
+                        // User Posts Section
+                        if !viewModel.userPosts.isEmpty {
+                            Text("Your Posts")
+                                .font(.custom("Vollkorn-Bold", size: 24)) // Custom Font
+                                .foregroundColor(.color) // Dark Green
+                                .padding(.top, 20)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal)
+
+                            // Posts List (Original Size)
+                            VStack(spacing: 16) {
+                                ForEach(viewModel.userPosts, id: \.id) { post in
+                                    ZStack(alignment: .top) {
+                                        PostView(post: post)
+                                            .frame(width: 400, height: 480)
+                                            .background(.color2)
+                                            .cornerRadius(15)
+                                            .shadow(radius: 5)
+
+                                        // Edit and Delete Buttons
+                                        HStack {
+                                            // Edit Button (Top Left)
+                                            Button(action: {
+                                                selectedPost = post
+                                                showEditPostView = true
+                                            }) {
+                                                Image(systemName: "pencil.circle.fill")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
+                                                    .foregroundColor(.color3) // Mint Green
+                                                    .padding(8)
+                                                    .background(Color.white.opacity(0.8))
+                                                    .clipShape(Circle())
+                                            }
+
+                                            Spacer()
+
+                                            // Delete Button (Top Right)
+                                            Button(action: {
+                                                deletePost(post)
+                                            }) {
+                                                Image(systemName: "trash.circle.fill")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
+                                                    .foregroundColor(.red)
+                                                    .padding(8)
+                                                    .background(Color.white.opacity(0.8))
+                                                    .clipShape(Circle())
+                                            }
                                         }
+                                        .padding(8)
                                     }
                                 }
                             }
-                        }
-                        .padding(.top, 40)
-
-                        // Confirmation Dialog
-                        .confirmationDialog("Are you sure you want to change your profile picture?", isPresented: $showConfirmationDialog, titleVisibility: .visible) {
-                            Button("Yes") {
-                                if let newPicture = pendingProfilePicture {
-                                    viewModel.profilePicture = newPicture
-                                    viewModel.updateProfilePicture()
-                                }
-                            }
-                            Button("Cancel", role: .cancel) {
-                                pendingProfilePicture = nil
-                            }
-                        }
-
-                        // Edit Info Button
-                        Button(action: {
-                            if isEditingInfo {
-                                restoreBackup() // Restore backup if exiting without saving
-                            } else {
-                                createBackup() // Create backup when starting to edit
-                            }
-                            isEditingInfo.toggle()
-                        }) {
-                            HStack {
-                                Image(systemName: isEditingInfo ? "xmark.circle.fill" : "pencil.circle.fill")
-                                Text(isEditingInfo ? "Exit" : "Edit Profile")
-                            }
-                            .foregroundColor(isEditingInfo ? .gray : .yellow)
-                            .font(.headline)
-                        }
-                        .padding()
-
-                        // Profile Info Fields
-                        Group {
-                            EditableFieldView(
-                                label: "Username",
-                                value: $viewModel.username,
-                                isEditable: isEditingInfo
-                            )
-                            EditableFieldView(
-                                label: "Email",
-                                value: $viewModel.email,
-                                isEditable: isEditingInfo
-                            )
-                            // Enhanced Description Field
-                            EnhancedDescriptionFieldView(
-                                description: Binding(
-                                    get: { viewModel.description ?? "" },
-                                    set: { viewModel.description = $0 }
-                                ),
-                                isEditable: isEditingInfo
-                            )
-                        }
-                        .padding(.horizontal)
-
-                        // Save Profile Button (Visible only in Edit Mode)
-                        if isEditingInfo {
-                            Button(action: {
-                                viewModel.saveProfileInfo()
-                                isEditingInfo.toggle()
-                            }) {
-                                Text("Save Profile")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.yellow)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
-                                    .shadow(radius: 5)
-                            }
                             .padding(.horizontal)
+                        } else {
+                            Text("No posts yet.")
+                                .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                                .foregroundColor(.gray)
+                                .padding()
                         }
                     }
                 }
@@ -160,9 +111,143 @@ struct ProfilePage: View {
         .onAppear {
             viewModel.fetchProfile()
         }
+        .fullScreenCover(item: $selectedPost) { post in
+            PostDetailEditView(post: post, viewModel: viewModel)
+                .onDisappear {
+                    viewModel.fetchProfile()
+                }
+        }
+    }
+
+    private func deletePost(_ post: Post) {
+        viewModel.deletePost(postId: post.id)
+    }
+
+    // MARK: - Subviews
+
+    private var profilePictureSection: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .frame(width: 128, height: 128)
+                .shadow(radius: 10)
+
+            if let profileImage = viewModel.profilePicture {
+                Image(uiImage: profileImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 128, height: 128)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "person.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 60, height: 60)
+                    .foregroundColor(.gray)
+            }
+
+            // PhotosPicker Button
+            PhotosPicker(selection: $selectedItem, matching: .images) {
+                Circle()
+                    .fill(Color.color3) // Mint Green
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "camera.fill")
+                            .foregroundColor(.white)
+                    )
+                    .shadow(radius: 5)
+            }
+            .offset(x: 45, y: 45)
+            .onChange(of: selectedItem) { newItem in
+                if let newItem = newItem {
+                    Task {
+                        if let data = try? await newItem.loadTransferable(type: Data.self),
+                           let uiImage = UIImage(data: data) {
+                            pendingProfilePicture = uiImage
+                            showConfirmationDialog = true
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.top, 40)
+        .confirmationDialog("Are you sure you want to change your profile picture?", isPresented: $showConfirmationDialog, titleVisibility: .visible) {
+            Button("Yes") {
+                if let newPicture = pendingProfilePicture {
+                    viewModel.profilePicture = newPicture
+                    viewModel.updateProfilePicture()
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                pendingProfilePicture = nil
+            }
+        }
+    }
+
+    private var editInfoButton: some View {
+        Button(action: {
+            if isEditingInfo {
+                restoreBackup() // Restore backup if exiting without saving
+            } else {
+                createBackup() // Create backup when starting to edit
+            }
+            isEditingInfo.toggle()
+        }) {
+            HStack {
+                Image(systemName: isEditingInfo ? "xmark.circle.fill" : "pencil.circle.fill")
+                Text(isEditingInfo ? "Exit" : "Edit Profile")
+            }
+            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+            .foregroundColor(isEditingInfo ? .gray : .color3) // Mint Green
+            .padding()
+            .background(Color.white.opacity(0.8))
+            .cornerRadius(10)
+            .shadow(radius: 2)
+        }
+    }
+
+    private var profileInfoFields: some View {
+        Group {
+            EditableFieldView(
+                label: "Username",
+                value: $viewModel.username,
+                isEditable: isEditingInfo
+            )
+            EditableFieldView(
+                label: "Email",
+                value: $viewModel.email,
+                isEditable: isEditingInfo
+            )
+            EnhancedDescriptionFieldView(
+                description: Binding(
+                    get: { viewModel.description ?? "" },
+                    set: { viewModel.description = $0 }
+                ),
+                isEditable: isEditingInfo
+            )
+        }
+        .padding(.horizontal)
+    }
+
+    private var saveProfileButton: some View {
+        Button(action: {
+            viewModel.saveProfileInfo()
+            isEditingInfo.toggle()
+        }) {
+            Text("Save Profile")
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.color3) // Mint Green
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 5)
+        }
+        .padding(.horizontal)
     }
 
     // MARK: - Backup Methods
+
     private func createBackup() {
         backupProfile = ProfileBackup(username: viewModel.username, email: viewModel.email, description: viewModel.description)
     }
@@ -182,8 +267,7 @@ struct ProfileBackup {
     let description: String?
 }
 
-
-
+// MARK: - EditableFieldView
 struct EditableFieldView: View {
     let label: String
     @Binding var value: String
@@ -192,16 +276,18 @@ struct EditableFieldView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
-                .font(.caption)
-                .foregroundColor(.gray)
+                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                .foregroundColor(.white)
             if isEditable {
                 TextField("", text: $value)
+                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
                     .padding(8)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)
             } else {
                 Text(value)
+                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
@@ -212,6 +298,7 @@ struct EditableFieldView: View {
     }
 }
 
+// MARK: - EnhancedDescriptionFieldView
 struct EnhancedDescriptionFieldView: View {
     @Binding var description: String
     let isEditable: Bool
@@ -219,40 +306,32 @@ struct EnhancedDescriptionFieldView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .font(.caption)
-                .foregroundColor(.gray)
+                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                .foregroundColor(.white)
 
             if isEditable {
-                // Editable TextEditor for Description
                 TextField("Add description", text: $description)
+                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
                     .padding(8)
-                    .frame(minHeight: 120) // Larger height for better usability
+                    .frame(minHeight: 120)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
             } else {
-                // Read-only Description
                 Text(description.isEmpty ? "Add description" : description)
+                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .frame(minHeight: 120) // Matches TextEditor height
+                    .frame(minHeight: 120)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
             }
         }
         .padding(.top, 8)
     }
 }
 
-#Preview{
+#Preview {
     ProfilePage()
 }

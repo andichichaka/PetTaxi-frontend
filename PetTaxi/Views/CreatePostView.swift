@@ -1,5 +1,5 @@
 import SwiftUI
-import _PhotosUI_SwiftUI
+import PhotosUI
 
 struct CreatePostView: View {
     @Binding var isActive: Bool
@@ -18,94 +18,123 @@ struct CreatePostView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack{
+            ZStack {
+                // Background
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.yellow.opacity(0.3), Color.white]),
+                    gradient: Gradient(colors: [Color.color2.opacity(0.2), Color.white]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .edgesIgnoringSafeArea(.all)
-                
+
                 ScrollView {
                     VStack(spacing: 20) {
-                        title
+                        // Title
+                        Text("Create New Post")
+                            .font(.custom("Vollkorn-Bold", size: 28)) // Custom Font
+                            .foregroundColor(.color) // Dark Green
+                            .padding(.top, 20)
+
+                        // Description Field
                         descriptionField
+
+                        // Animal Type Picker
                         animalTypePicker
+
+                        // Service Type Selection
                         serviceTypeSelection
+
+                        // Animal Size Selection
                         animalSizeSelection
+
+                        // Upload Photo Section
                         uploadPhotoSection
+
+                        // Next Button
                         nextButton
+
+                        // Error Message
                         if let errorMessage = errorMessage {
                             Text(errorMessage)
-                                .font(.caption)
-                                .fontWeight(.medium)
+                                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
                                 .foregroundColor(.red)
+                                .padding(.horizontal)
                         }
+
+                        // Close Button
                         closeButton
                     }
                     .padding()
                 }
             }
+            .navigationDestination(isPresented: $viewModel.navigateToSetPrices) {
+                SetPricesView(viewModel: viewModel, isActive: $isActive)
+            }
         }
-        .navigationDestination(isPresented: $viewModel.navigateToSetPrices) {
-            SetPricesView(viewModel: viewModel)
-        }
-
-        .navigationTitle("Create Post")
     }
 
-    private var title: some View {
-        Text("Create New Post")
-            .font(.title)
-            .bold()
-            .padding(.top)
-    }
+    // MARK: - Subviews
 
     private var descriptionField: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .font(.headline)
-            TextField("Explain your service...", text: $description)
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .foregroundColor(.color) // Dark Green
+
+            TextEditor(text: $description)
+                .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
+                .frame(minHeight: 100) // Expandable height
                 .padding()
                 .background(Color.white)
-                .frame(height: 60)
-                .cornerRadius(30)
+                .cornerRadius(15)
+                .shadow(radius: 2)
         }
     }
 
     private var animalTypePicker: some View {
         VStack(alignment: .leading) {
             Text("Animal Type")
-                .font(.headline)
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .foregroundColor(.color) // Dark Green
+
             Picker("Select Animal Type", selection: $animalType) {
                 ForEach(animalTypeOptions, id: \.self) { type in
-                    Text(type).tag(type)
+                    Text(type)
+                        .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                        .tag(type)
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(radius: 2)
         }
     }
 
     private var serviceTypeSelection: some View {
         VStack(alignment: .leading) {
             Text("Service Types")
-                .font(.headline)
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 10) {
-                    ForEach(serviceTypeOptions, id: \.self) { type in
-                        Toggle(isOn: Binding(
-                            get: { serviceTypes.contains(type) },
-                            set: { isSelected in
-                                if isSelected {
-                                    serviceTypes.append(type)
-                                } else {
-                                    serviceTypes.removeAll { $0 == type }
-                                }
-                            }
-                        )) {
-                            Text(type)
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .foregroundColor(.color) // Dark Green
+
+            // Two services per row
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                ForEach(serviceTypeOptions, id: \.self) { type in
+                    Button(action: {
+                        if serviceTypes.contains(type) {
+                            serviceTypes.removeAll { $0 == type }
+                        } else {
+                            serviceTypes.append(type)
                         }
-                        .toggleStyle(CheckboxToggleStyle())
+                    }) {
+                        Text(type)
+                            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(serviceTypes.contains(type) ? Color.color3 : Color.color2.opacity(0.3)) // Mint Green or Light Green
+                            .foregroundColor(serviceTypes.contains(type) ? .white : .color) // Dark Green
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
                     }
                 }
             }
@@ -115,23 +144,27 @@ struct CreatePostView: View {
     private var animalSizeSelection: some View {
         VStack(alignment: .leading) {
             Text("Animal Sizes")
-                .font(.headline)
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 10) {
-                    ForEach(animalSizeOptions, id: \.self) { size in
-                        Toggle(isOn: Binding(
-                            get: { animalSizes.contains(size) },
-                            set: { isSelected in
-                                if isSelected {
-                                    animalSizes.append(size)
-                                } else {
-                                    animalSizes.removeAll { $0 == size }
-                                }
-                            }
-                        )) {
-                            Text(size)
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .foregroundColor(.color) // Dark Green
+
+            // Two sizes per row
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                ForEach(animalSizeOptions, id: \.self) { size in
+                    Button(action: {
+                        if animalSizes.contains(size) {
+                            animalSizes.removeAll { $0 == size }
+                        } else {
+                            animalSizes.append(size)
                         }
-                        .toggleStyle(CheckboxToggleStyle())
+                    }) {
+                        Text(size)
+                            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(animalSizes.contains(size) ? Color.color3 : Color.color2.opacity(0.3)) // Mint Green or Light Green
+                            .foregroundColor(animalSizes.contains(size) ? .white : .color) // Dark Green
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
                     }
                 }
             }
@@ -141,7 +174,9 @@ struct CreatePostView: View {
     private var uploadPhotoSection: some View {
         VStack(alignment: .leading) {
             Text("Upload Photos")
-                .font(.headline)
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .foregroundColor(.color) // Dark Green
+
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 10) {
                     ForEach(0..<selectedImages.count, id: \.self) { index in
@@ -159,9 +194,10 @@ struct CreatePostView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
+                                .foregroundColor(.color) // Dark Green
                             Text("Upload")
-                                .font(.footnote)
-                                .foregroundColor(Color.gray)
+                                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                                .foregroundColor(.color) // Dark Green
                         }
                         .frame(width: 150, height: 150)
                         .background(Color.white)
@@ -186,57 +222,52 @@ struct CreatePostView: View {
     }
 
     private var nextButton: some View {
-        NavigationLink(
-            destination: SetPricesView(viewModel: viewModel),
-            isActive: $viewModel.navigateToSetPrices // Binding to trigger navigation
-        ) {
-            Button(action: {
-                if validateForm() {
-                    // Update the ViewModel before navigating
-                    viewModel.description = description
-                    viewModel.animalType = animalType.lowercased()
-                    viewModel.animalSizes = animalSizes.map { $0.lowercased() }
+        Button(action: {
+            if validateForm() {
+                // Update the ViewModel before navigating
+                viewModel.description = description
+                viewModel.animalType = animalType.lowercased()
+                viewModel.animalSizes = animalSizes.map { $0.lowercased() }
 
-                    viewModel.services = serviceTypes.map { serviceType in
-                        CreateServiceRequest(serviceType: serviceType.lowercased(), price: 0.0, unavailableDates: [])
-                    }
-
-                    print("Form Validated. Navigating to SetPricesView.")
-                    viewModel.navigateToSetPrices = true
-                } else {
-                    errorMessage = "Please fill in all required fields"
-                    print("Form Validation Failed.")
+                viewModel.services = serviceTypes.map { serviceType in
+                    CreateServiceRequest(serviceType: serviceType.lowercased(), price: 0.0, unavailableDates: [])
                 }
-            }) {
-                Text("Next")
-                    .bold()
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.yellow)
-                    .cornerRadius(8)
-                    .foregroundColor(.white)
-                    .shadow(radius: 5)
+
+                print("Form Validated. Navigating to SetPricesView.")
+                viewModel.navigateToSetPrices = true
+                print("\(viewModel.navigateToSetPrices)")
+            } else {
+                errorMessage = "Please fill in all required fields"
+                print("Form Validation Failed.")
             }
+        }) {
+            Text("Next")
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.color3) // Mint Green
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 5)
         }
-        .padding(.top)
     }
-
-
 
     private var closeButton: some View {
         Button(action: {
             isActive = false
         }) {
             Text("Close")
-                .bold()
-                .frame(width: 100)
+                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.red)
-                .cornerRadius(60)
+                .background(Color.color) // Dark Green
                 .foregroundColor(.white)
+                .cornerRadius(10)
                 .shadow(radius: 5)
         }
     }
+
+    // MARK: - Helper Methods
 
     private func validateForm() -> Bool {
         return !description.isEmpty &&
@@ -245,17 +276,6 @@ struct CreatePostView: View {
     }
 }
 
-struct CheckboxToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack {
-            configuration.label
-            Spacer()
-            Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
-                .onTapGesture { configuration.isOn.toggle() }
-        }
-    }
-}
-
-#Preview{
+#Preview {
     CreatePostView(isActive: .constant(true))
 }

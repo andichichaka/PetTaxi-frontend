@@ -20,7 +20,7 @@ struct AuthTextField: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.white)
             if isSecure {
                 SecureField("", text: $text)
                     .focused(focusState, equals: assignedFocus)
@@ -31,7 +31,7 @@ struct AuthTextField: View {
                     }
                     .padding()
                     .background(Color.white)
-                    .cornerRadius(10)
+                    .cornerRadius(20)
                     .shadow(radius: 1)
             } else {
                 TextField("", text: $text)
@@ -43,7 +43,7 @@ struct AuthTextField: View {
                     }
                     .padding()
                     .background(Color.white)
-                    .cornerRadius(10)
+                    .cornerRadius(20)
                     .shadow(radius: 1)
             }
             if !errorMessage.isEmpty {

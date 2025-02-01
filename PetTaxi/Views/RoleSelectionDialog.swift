@@ -22,18 +22,20 @@ struct RoleSelectionDialog: View {
 
             VStack(spacing: 20) {
                 Text("Choose Your Role")
-                    .font(.title2)
+                    .font(.custom("Vollkorn-Bold", size: 25))
                     .bold()
-                    .padding()
+                    .padding(.top)
+                    .padding(.bottom, -5)
 
                 Text("Select how you'll be using our platform")
-                    .font(.body)
+                    .font(.custom("Vollkorn-Medium", size: 17))
                     .multilineTextAlignment(.center)
+                    .padding(.bottom)
 
                 VStack(spacing: 16) {
                     Button(action: {
                         submitRole("admin")
-                        UserDefaults.standard.set("admin", forKey: "userRole")// `Caretaker` maps to `admin`
+                        UserDefaults.standard.set("admin", forKey: "userRole")
                     }) {
                         RoleOptionView(
                             title: "Caretaker",
@@ -106,16 +108,17 @@ struct RoleOptionView: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 24))
-                .foregroundColor(.yellow)
+                .foregroundColor(Color.color3)
                 .frame(width: 50, height: 50)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.headline)
+                    .font(.custom("Vollkorn-Bold", size: 20))
+                    .multilineTextAlignment(.center)
                     .foregroundColor(.primary)
                 Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.custom("Vollkorn-Medium", size: 13))
+                    .foregroundColor(Color.color3)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -124,4 +127,8 @@ struct RoleOptionView: View {
         .cornerRadius(12)
         .shadow(radius: 2)
     }
+}
+
+#Preview{
+    RoleSelectionDialog(isActive: .constant(true))
 }

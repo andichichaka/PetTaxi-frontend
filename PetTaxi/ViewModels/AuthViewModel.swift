@@ -2,25 +2,20 @@ import Foundation
 import Combine
 
 class AuthViewModel: ObservableObject {
-    // Input fields
     @Published var userName = ""
     @Published var userEmail = ""
     @Published var userPassword = ""
     @Published var userRepeatedPassword = ""
 
-    // Validation states
     @Published var userNameError: String = ""
     @Published var userEmailError: String = ""
     @Published var userPasswordError: String = ""
     @Published var userRepeatedPasswordError: String = ""
 
-    // Tracks fields that have been validated (after Enter)
     @Published var validatedFields: Set<FocusField> = []
 
-    // Form validation state
     @Published var isFormValid = false
 
-    // Tracks required fields for validation
     private let requiredFields: Set<FocusField> = [.username, .email, .password, .repeatPassword]
 
     private var cancellables = Set<AnyCancellable>()
