@@ -7,7 +7,6 @@ struct SetPricesView: View {
 
     var body: some View {
             ZStack {
-                // Background Gradient
                 LinearGradient(
                     gradient: Gradient(colors: [Color.color2.opacity(0.2), Color.white]),
                     startPoint: .top,
@@ -16,29 +15,27 @@ struct SetPricesView: View {
                 .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 20) {
-                    // Title
                     Text("Set Prices for Services")
-                        .font(.custom("Vollkorn-Bold", size: 28)) // Custom Font
-                        .foregroundColor(.color) // Dark Green
+                        .font(.custom("Vollkorn-Bold", size: 28))
+                        .foregroundColor(.color)
                         .padding(.top, 20)
 
-                    // Services List
                     ScrollView {
                         VStack(spacing: 15) {
                             ForEach(0..<viewModel.services.count, id: \.self) { index in
                                 HStack {
                                     Text(viewModel.services[index].serviceType.capitalized)
-                                        .font(.custom("Vollkorn-Medium", size: 18)) // Custom Font
-                                        .foregroundColor(.color) // Dark Green
+                                        .font(.custom("Vollkorn-Medium", size: 18))
+                                        .foregroundColor(.color)
 
                                     Spacer()
 
                                     TextField("Enter price", value: $viewModel.services[index].price, format: .number)
                                         .keyboardType(.decimalPad)
-                                        .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
+                                        .font(.custom("Vollkorn-Regular", size: 16))
                                         .padding(10)
                                         .frame(width: 100)
-                                        .background(Color.color2.opacity(0.3)) // Light Green
+                                        .background(Color.color2.opacity(0.3))
                                         .cornerRadius(10)
                                         .shadow(radius: 2)
                                 }
@@ -51,15 +48,13 @@ struct SetPricesView: View {
                         .padding(.horizontal)
                     }
 
-                    // Error Message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
-                            .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                            .font(.custom("Vollkorn-Medium", size: 14))
                             .foregroundColor(.red)
                             .padding(.horizontal)
                     }
 
-                    // Next Button
                     Button(action: {
                         if validatePrices() {
                             viewModel.navigateToUnavailableDates = true
@@ -68,25 +63,24 @@ struct SetPricesView: View {
                         }
                     }) {
                         Text("Next")
-                            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                            .font(.custom("Vollkorn-Bold", size: 18))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.color3) // Mint Green
+                            .background(Color.color3)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                             .shadow(radius: 5)
                     }
                     .padding(.horizontal)
 
-                    // Back Button
                     Button(action: {
                         viewModel.navigateToSetPrices = false
                     }) {
                         Text("Back")
-                            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                            .font(.custom("Vollkorn-Bold", size: 18))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.color) // Dark Green
+                            .background(Color.color)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                             .shadow(radius: 5)

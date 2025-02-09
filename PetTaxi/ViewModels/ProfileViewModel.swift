@@ -1,25 +1,18 @@
-//
-//  ProfileViewModel.swift
-//  PetTaxi
-//
-//  Created by Andrey on 2.01.25.
-//
-
 import SwiftUI
 import Combine
 
 final class ProfileViewModel: ObservableObject {
     @Published var username: String = "N/A"
     @Published var email: String = "N/A"
-    @Published var description: String? = nil // Optional description
+    @Published var description: String? = nil
     @Published var profilePicture: UIImage?
     @Published var role: String?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    @Published var userPosts: [Post] = [] // Holds user's posts
-
+    @Published var userPosts: [Post] = []
+    
     private let communicationManager = CommunicationManager.shared
-
+    
     func fetchProfile() {
         isLoading = true
         communicationManager.execute(
@@ -32,13 +25,13 @@ final class ProfileViewModel: ObservableObject {
                 case .success(let profile):
                     self.username = profile.username
                     self.email = profile.email
-                    self.description = profile.description // Optional
+                    self.description = profile.description
                     if let profilePictureUrl = profile.profilePicture {
                         self.loadImage(from: profilePictureUrl)
                     }
                     if let posts = profile.posts{
                         self.userPosts = posts
-                    } // Assign fetched posts
+                    }
                 case .failure(let error):
                     self.errorMessage = "Failed to fetch profile: \(error.localizedDescription)"
                 }
@@ -52,7 +45,7 @@ final class ProfileViewModel: ObservableObject {
             errorMessage = "No valid image to upload."
             return
         }
-
+        
         isLoading = true
         communicationManager.uploadFile(
             endpoint: .uploadPic,
@@ -79,7 +72,7 @@ final class ProfileViewModel: ObservableObject {
             errorMessage = "No valid image to upload."
             return
         }
-
+        
         isLoading = true
         communicationManager.uploadFile(
             endpoint: .updatePic,
@@ -101,33 +94,35 @@ final class ProfileViewModel: ObservableObject {
     }
     
     func saveProfileInfo() {
-            let updateProfile = UpdateProfile(
-                email: email,
-                username: username,
-                description: description ?? ""
-            )
-
-            isLoading = true
-            communicationManager.execute(
-                endpoint: .updateProfile,
-                body: updateProfile,
-                responseType: Profile.self
-            ) { result in
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    switch result {
-                    case .success:
-                        print("Profile updated successfully")
-                    case .failure(let error):
-                        self.errorMessage = "Failed to update profile: \(error.localizedDescription)"
-                    }
+        let updateProfile = UpdateProfile(
+            email: email,
+            username: username,
+            description: description ?? ""
+        )
+        
+        print(updateProfile)
+        
+        isLoading = true
+        communicationManager.execute(
+            endpoint: .updateProfile,
+            body: updateProfile,
+            responseType: Profile.self
+        ) { result in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                switch result {
+                case .success:
+                    print("Profile updated successfully")
+                case .failure(let error):
+                    self.errorMessage = "Failed to update profile: \(error.localizedDescription)"
                 }
             }
         }
-
+    }
+    
     private func loadImage(from urlString: String) {
         guard let url = URL(string: urlString) else { return }
-
+        
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data, let image = UIImage(data: data) {
                 DispatchQueue.main.async {
@@ -138,33 +133,34 @@ final class ProfileViewModel: ObservableObject {
     }
     
     func submitRole(_ role: String, completion: @escaping (Bool) -> Void) {
-            let requestBody = ["role": role]
-
-            communicationManager.execute(
-                endpoint: .setRole,
-                body: requestBody,
-                responseType: User.self
-            ) { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let response):
-                        if let token = response.access_token{
-                            TokenManager.shared.saveToken(token)
-                            print("Role submitted successfully: \(response.role)")
-                            completion(true)
-                        }
-                    case .failure(let error):
-                        print("Failed to submit role: \(error.localizedDescription)")
-                        self.errorMessage = "Failed to submit role: \(error.localizedDescription)"
-                        completion(false)
+        let requestBody = ["role": role]
+        
+        communicationManager.execute(
+            endpoint: .setRole,
+            body: requestBody,
+            responseType: User.self
+        ) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    if let access_token = response.access_token, let refresh_token = response.refresh_token {
+                        TokenManager.shared.saveTokens(accessToken: access_token, refreshToken: refresh_token)
+                        print("Role submitted successfully: \(String(describing: response.role))")
+                        completion(true)
                     }
+                case .failure(let error):
+                    print("Failed to submit role: \(error.localizedDescription)")
+                    self.errorMessage = "Failed to submit role: \(error.localizedDescription)"
+                    completion(false)
                 }
             }
         }
+    }
+    
     func updatePost(post: Post) {
         isLoading = true
         communicationManager.execute(
-            endpoint: .custom("posts/update/\(post.id)"), // Replace with your backend endpoint for updating a post
+            endpoint: .custom("posts/update/\(post.id)"),
             body: post,
             responseType: Post.self
         ) { result in
@@ -183,14 +179,7 @@ final class ProfileViewModel: ObservableObject {
     }
     
     func updatePostImages(postId: Int, images: [UIImage]?) {
-        // Ensure there are images to upload
-//        guard !images.isEmpty else {
-//            self.errorMessage = "No images to upload."
-//            return
-//        }
-
-        // Convert images to data
-        var imageParts: [(data: Data, fieldName: String, fileName: String, mimeType: String)] = []
+      var imageParts: [(data: Data, fieldName: String, fileName: String, mimeType: String)] = []
         
         if let images = images{
             for (index, image) in images.enumerated() {
@@ -200,8 +189,7 @@ final class ProfileViewModel: ObservableObject {
                 }
             }
         }
-
-        // Make the upload request
+        
         communicationManager.uploadMultipleFiles(
             endpoint: .updatePostImages(postId),
             files: imageParts
@@ -210,7 +198,7 @@ final class ProfileViewModel: ObservableObject {
                 switch result {
                 case .success:
                     print("Images uploaded successfully.")
-                    self.errorMessage = nil // Clear any previous error
+                    self.errorMessage = nil
                 case .failure(let error):
                     self.errorMessage = "Failed to upload images: \(error.localizedDescription)"
                 }
@@ -235,4 +223,5 @@ final class ProfileViewModel: ObservableObject {
                 }
             }
         }
-    }}
+    }
+}

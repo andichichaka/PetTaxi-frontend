@@ -8,7 +8,6 @@ struct LogInView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                // Login Fields
                 VStack(spacing: 16) {
                     AuthTextField(
                         title: "Username",
@@ -34,16 +33,14 @@ struct LogInView: View {
                 }
                 .padding()
 
-                // Login Button
                 Button(action: {
                     let newProfile = LogIn(
                         username: viewModel.userName,
                         password: viewModel.userPassword
                     )
-                    viewModel.logIn(profile: newProfile) { success, token in
+                    viewModel.logIn(profile: newProfile) { success in
                         
-                        if success, let token = token {
-                            TokenManager.shared.saveToken(token)
+                        if success {
                             DispatchQueue.main.async {
                                 showHomePage = true
                             }

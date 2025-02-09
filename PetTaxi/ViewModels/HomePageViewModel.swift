@@ -17,7 +17,7 @@ final class HomePageViewModel: ObservableObject {
                     self.posts = fetchedPosts
                 case .failure(let error):
                     if case CommunicationError.unauthorized = error {
-                        TokenManager.shared.deleteToken()
+                        TokenManager.shared.deleteTokens()
                         self.errorMessage = "Unauthorized. Please log in again."
                     } else {
                         self.errorMessage = error.localizedDescription

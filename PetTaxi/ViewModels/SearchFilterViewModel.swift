@@ -1,10 +1,3 @@
-//
-//  SearchFilterViewModel.swift
-//  PetTaxi
-//
-//  Created by Andrey on 15.01.25.
-//
-
 import SwiftUI
 
 final class SearchFilterViewModel: ObservableObject {
@@ -19,7 +12,6 @@ final class SearchFilterViewModel: ObservableObject {
     private let communicationManager = CommunicationManager.shared
 
     func performSearch(completion: @escaping (Bool) -> Void) {
-        // Create query parameters
         var queryItems = [URLQueryItem]()
         if !keyword.isEmpty {
             queryItems.append(URLQueryItem(name: "keywords", value: keyword.lowercased()))

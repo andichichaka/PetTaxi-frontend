@@ -14,7 +14,6 @@ struct NavigationBarView: View {
     var body: some View {
         NavigationStack {
             TabView(selection: $selectedTab) {
-                // Home Tab
                 HomePageView()
                     .tabItem {
                         Image(systemName: "house.fill")
@@ -22,7 +21,6 @@ struct NavigationBarView: View {
                     }
                     .tag(Tab.home)
                 
-                // Create Post Tab (Conditional for Admin)
                 if roleManager.userRole == "admin" {
                     Button(action: {
                         isCreatePostActive = true
@@ -31,7 +29,7 @@ struct NavigationBarView: View {
                             .font(.system(size: 30))
                             .foregroundColor(.white)
                             .padding()
-                            .background(Circle().fill(Color.color3).shadow(radius: 4)) // Mint Green
+                            .background(Circle().fill(Color.color3).shadow(radius: 4))
                     }
                     .buttonStyle(PlainButtonStyle())
                     .offset(y: -20)
@@ -45,7 +43,6 @@ struct NavigationBarView: View {
                     .tag(Tab.createPost)
                 }
                 
-                // Profile Tab
                 ProfilePage()
                     .tabItem {
                         Image(systemName: "person.fill")
@@ -53,22 +50,18 @@ struct NavigationBarView: View {
                     }
                     .tag(Tab.profile)
             }
-            .accentColor(.white) // Set the selected tab icon and text color to white
+            .accentColor(.white)
             .onAppear {
-                // Customize the appearance of the tab bar
                 let appearance = UITabBarAppearance()
                 appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor.white.withAlphaComponent(0.8) // Semi-transparent black
+                appearance.backgroundColor = UIColor.white.withAlphaComponent(0.8)
                 
-                // Unselected icon and text color
-                appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.color3.opacity(0.7)) // Mint Green (lighter)
-                appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color.color3.opacity(0.7))] // Mint Green (lighter)
+                appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.color3.opacity(0.7))
+                appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color.color3.opacity(0.7))]
                 
-                // Selected icon and text color
-                appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.color3) // Mint Green
-                appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(Color.color3)] // Mint Green
+                appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.color3)
+                appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(Color.color3)]
                 
-                // Apply the appearance
                 UITabBar.appearance().standardAppearance = appearance
                 UITabBar.appearance().scrollEdgeAppearance = appearance
             }

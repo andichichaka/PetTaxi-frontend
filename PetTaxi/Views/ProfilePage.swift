@@ -4,118 +4,119 @@ import PhotosUI
 struct ProfilePage: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var isEditingInfo = false
-    @State private var selectedItem: PhotosPickerItem? // For PhotosPicker
-    @State private var showConfirmationDialog = false // For confirmation dialog
-    @State private var pendingProfilePicture: UIImage? = nil // Temp profile picture
-    @State private var backupProfile: ProfileBackup? = nil // Backup for unsaved changes
-    @State private var selectedPost: Post? // For editing a post
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var showConfirmationDialog = false
+    @State private var pendingProfilePicture: UIImage? = nil
+    @State private var backupProfile: ProfileBackup? = nil
+    @State private var selectedPost: Post?
     @State private var showEditPostView = false
+    @State private var navigateToAuth = false
 
     var body: some View {
-        ZStack {
-            // Live Blurry Background
-            LiveBlurryBackground()
-
-            if viewModel.isLoading {
-                ProgressView("Loading...")
-                    .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-                    .foregroundColor(.color) // Dark Green
-            } else if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
-                    .padding()
-            } else {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // Profile Picture Section
-                        profilePictureSection
-
-                        // Edit Info Button
-                        editInfoButton
-
-                        // Profile Info Fields
-                        profileInfoFields
-
-                        // Save Profile Button
-                        if isEditingInfo {
-                            saveProfileButton
-                        }
-
-                        // User Posts Section
-                        if !viewModel.userPosts.isEmpty {
-                            Text("Your Posts")
-                                .font(.custom("Vollkorn-Bold", size: 24)) // Custom Font
-                                .foregroundColor(.color) // Dark Green
-                                .padding(.top, 20)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-
-                            // Posts List (Original Size)
-                            VStack(spacing: 16) {
-                                ForEach(viewModel.userPosts, id: \.id) { post in
-                                    ZStack(alignment: .top) {
-                                        PostView(post: post)
-                                            .frame(width: 400, height: 480)
-                                            .background(.color2)
-                                            .cornerRadius(15)
-                                            .shadow(radius: 5)
-
-                                        // Edit and Delete Buttons
-                                        HStack {
-                                            // Edit Button (Top Left)
-                                            Button(action: {
-                                                selectedPost = post
-                                                showEditPostView = true
-                                            }) {
-                                                Image(systemName: "pencil.circle.fill")
-                                                    .resizable()
-                                                    .frame(width: 30, height: 30)
-                                                    .foregroundColor(.color3) // Mint Green
-                                                    .padding(8)
-                                                    .background(Color.white.opacity(0.8))
-                                                    .clipShape(Circle())
+        NavigationStack {
+            ZStack {
+                LiveBlurryBackground()
+                
+                if viewModel.isLoading {
+                    ProgressView("Loading...")
+                        .font(.custom("Vollkorn-Bold", size: 18))
+                        .foregroundColor(.color)
+                } else if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .font(.custom("Vollkorn-Medium", size: 16))
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                } else {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            profilePictureSection
+                            
+                            editInfoButton
+                            
+                            profileInfoFields
+                            
+                            if isEditingInfo {
+                                saveProfileButton
+                            }
+                            
+                            if !viewModel.userPosts.isEmpty {
+                                Text("Your Posts")
+                                    .font(.custom("Vollkorn-Bold", size: 24))
+                                    .foregroundColor(.color)
+                                    .padding(.top, 20)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                                
+                                VStack(spacing: 16) {
+                                    ForEach(viewModel.userPosts, id: \.id) { post in
+                                        ZStack(alignment: .top) {
+                                            PostView(post: post)
+                                                .frame(width: 400, height: 480)
+                                                .background(.color2)
+                                                .cornerRadius(15)
+                                                .shadow(radius: 5)
+                                            
+                                            HStack {
+                                                Button(action: {
+                                                    selectedPost = post
+                                                    showEditPostView = true
+                                                }) {
+                                                    Image(systemName: "pencil.circle.fill")
+                                                        .resizable()
+                                                        .frame(width: 30, height: 30)
+                                                        .foregroundColor(.color3)
+                                                        .padding(8)
+                                                        .background(Color.white.opacity(0.8))
+                                                        .clipShape(Circle())
+                                                }
+                                                
+                                                Spacer()
+                                                
+                                                Button(action: {
+                                                    deletePost(post)
+                                                }) {
+                                                    Image(systemName: "trash.circle.fill")
+                                                        .resizable()
+                                                        .frame(width: 30, height: 30)
+                                                        .foregroundColor(.red)
+                                                        .padding(8)
+                                                        .background(Color.white.opacity(0.8))
+                                                        .clipShape(Circle())
+                                                }
                                             }
-
-                                            Spacer()
-
-                                            // Delete Button (Top Right)
-                                            Button(action: {
-                                                deletePost(post)
-                                            }) {
-                                                Image(systemName: "trash.circle.fill")
-                                                    .resizable()
-                                                    .frame(width: 30, height: 30)
-                                                    .foregroundColor(.red)
-                                                    .padding(8)
-                                                    .background(Color.white.opacity(0.8))
-                                                    .clipShape(Circle())
-                                            }
+                                            .padding(8)
                                         }
-                                        .padding(8)
                                     }
                                 }
+                                .padding(.horizontal)
+                            } else {
+                                Text("No posts yet.")
+                                    .font(.custom("Vollkorn-Medium", size: 16))
+                                    .foregroundColor(.gray)
+                                    .padding()
                             }
-                            .padding(.horizontal)
-                        } else {
-                            Text("No posts yet.")
-                                .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
-                                .foregroundColor(.gray)
-                                .padding()
+                            
+                            Spacer()
+                                                        
+                            logoutButton
                         }
                     }
                 }
             }
-        }
-        .onAppear {
-            viewModel.fetchProfile()
-        }
-        .fullScreenCover(item: $selectedPost) { post in
-            PostDetailEditView(post: post, viewModel: viewModel)
-                .onDisappear {
-                    viewModel.fetchProfile()
-                }
+            .onAppear {
+                viewModel.fetchProfile()
+            }
+            .fullScreenCover(item: $selectedPost) { post in
+                PostDetailEditView(post: post, viewModel: viewModel)
+                    .onDisappear {
+                        viewModel.fetchProfile()
+                    }
+            }
+            .navigationDestination(isPresented: $navigateToAuth) {
+                AuthView()
+                    .navigationBarBackButtonHidden(true)
+            }
         }
     }
 
@@ -146,10 +147,9 @@ struct ProfilePage: View {
                     .foregroundColor(.gray)
             }
 
-            // PhotosPicker Button
             PhotosPicker(selection: $selectedItem, matching: .images) {
                 Circle()
-                    .fill(Color.color3) // Mint Green
+                    .fill(Color.color3)
                     .frame(width: 36, height: 36)
                     .overlay(
                         Image(systemName: "camera.fill")
@@ -187,9 +187,9 @@ struct ProfilePage: View {
     private var editInfoButton: some View {
         Button(action: {
             if isEditingInfo {
-                restoreBackup() // Restore backup if exiting without saving
+                restoreBackup()
             } else {
-                createBackup() // Create backup when starting to edit
+                createBackup()
             }
             isEditingInfo.toggle()
         }) {
@@ -197,8 +197,8 @@ struct ProfilePage: View {
                 Image(systemName: isEditingInfo ? "xmark.circle.fill" : "pencil.circle.fill")
                 Text(isEditingInfo ? "Exit" : "Edit Profile")
             }
-            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-            .foregroundColor(isEditingInfo ? .gray : .color3) // Mint Green
+            .font(.custom("Vollkorn-Bold", size: 18))
+            .foregroundColor(isEditingInfo ? .gray : .color3)
             .padding()
             .background(Color.white.opacity(0.8))
             .cornerRadius(10)
@@ -231,20 +231,40 @@ struct ProfilePage: View {
 
     private var saveProfileButton: some View {
         Button(action: {
-            viewModel.saveProfileInfo()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                viewModel.saveProfileInfo()
+            }
             isEditingInfo.toggle()
         }) {
             Text("Save Profile")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .font(.custom("Vollkorn-Bold", size: 18))
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.color3) // Mint Green
+                .background(Color.color3)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .shadow(radius: 5)
         }
         .padding(.horizontal)
     }
+    
+    private var logoutButton: some View {
+            Button(action: {
+                TokenManager.shared.deleteTokens()
+                navigateToAuth = true
+            }) {
+                Text("Log Out")
+                    .font(.custom("Vollkorn-Bold", size: 18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 20)
+        }
 
     // MARK: - Backup Methods
 
@@ -276,18 +296,18 @@ struct EditableFieldView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
-                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                .font(.custom("Vollkorn-Medium", size: 14))
                 .foregroundColor(.white)
             if isEditable {
                 TextField("", text: $value)
-                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
+                    .font(.custom("Vollkorn-Regular", size: 16))
                     .padding(8)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)
             } else {
                 Text(value)
-                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
+                    .font(.custom("Vollkorn-Regular", size: 16))
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
@@ -306,12 +326,12 @@ struct EnhancedDescriptionFieldView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                .font(.custom("Vollkorn-Medium", size: 14))
                 .foregroundColor(.white)
 
             if isEditable {
                 TextField("Add description", text: $description)
-                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
+                    .font(.custom("Vollkorn-Regular", size: 16))
                     .padding(8)
                     .frame(minHeight: 120)
                     .background(Color.white)
@@ -319,7 +339,7 @@ struct EnhancedDescriptionFieldView: View {
                     .shadow(radius: 1)
             } else {
                 Text(description.isEmpty ? "Add description" : description)
-                    .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
+                    .font(.custom("Vollkorn-Regular", size: 16))
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(minHeight: 120)

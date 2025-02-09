@@ -1,10 +1,3 @@
-//
-//  AuthTextField.swift
-//  PetTaxi
-//
-//  Created by Andrey on 23.12.24.
-//
-
 import SwiftUI
 
 struct AuthTextField: View {
@@ -14,7 +7,7 @@ struct AuthTextField: View {
     let assignedFocus: FocusField
     var isSecure: Bool = false
     var errorMessage: String
-    var onSubmit: (() -> Void)? = nil // Called when Enter is pressed
+    var onSubmit: (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -63,7 +56,7 @@ struct AuthTextField: View {
         case .password:
             focusState.wrappedValue = .repeatPassword
         case .repeatPassword:
-            focusState.wrappedValue = nil // Dismiss keyboard
+            focusState.wrappedValue = nil
         }
     }
 }

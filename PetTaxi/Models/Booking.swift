@@ -1,10 +1,3 @@
-//
-//  Booking.swift
-//  PetTaxi
-//
-//  Created by Andrey on 23.01.25.
-//
-
 import Foundation
 
 struct CreateBookingRequest: Codable {

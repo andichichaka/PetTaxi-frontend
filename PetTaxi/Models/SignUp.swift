@@ -1,10 +1,3 @@
-//
-//  Profile.swift
-//  Jigit
-//
-//  Created by Andrey on 10.07.24.
-//
-
 import Foundation
 
 struct SignUp: Codable {
@@ -27,6 +20,7 @@ struct VerifyEmail: Codable {
 struct VerifyEmailResponse: Codable {
     let success: Bool
     let access_token: String?
+    let refresh_token: String?
     let message: String?
 }
 

@@ -3,10 +3,10 @@ import SwiftUI
 struct CalendarView: View {
     @Binding var selectedDates: Set<Date>
     let unavailableDates: [Date]
-    let serviceType: String // To determine if weekly services need special handling
+    let serviceType: String
     @State private var errorMessage: String?
 
-    let daysOfWeek = Calendar.current.shortWeekdaySymbols.shiftedToMonday() // Start week on Monday
+    let daysOfWeek = Calendar.current.shortWeekdaySymbols.shiftedToMonday()
     let columns = Array(repeating: GridItem(.flexible()), count: 7)
     @State private var days: [Date] = []
     @State private var currentMonth = Date.now
@@ -31,7 +31,7 @@ struct CalendarView: View {
             // Days of the Week
             HStack {
                 ForEach(daysOfWeek, id: \.self) { day in
-                    Text(day) // Show full names like "Mon", "Tue", etc.
+                    Text(day)
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                 }
@@ -55,7 +55,6 @@ struct CalendarView: View {
                 }
             }
 
-            // Error Message
             if let errorMessage = errorMessage {
                 Text(errorMessage)
                     .font(.footnote)
@@ -107,14 +106,12 @@ struct CalendarView: View {
         }
         
         if availableDays.allSatisfy({ selectedDates.contains($0) }) {
-            // If all days are selected, unselect them
             availableDays.forEach { selectedDates.remove($0) }
         } else {
-            // Otherwise, select the available days
             selectedDates.formUnion(availableDays)
         }
         
-        errorMessage = nil // Clear the error if the selection is valid
+        errorMessage = nil
     }
 }
 
@@ -125,7 +122,7 @@ extension Array where Element == String {
         var shifted = self
         if let sunday = shifted.first {
             shifted.removeFirst()
-            shifted.append(sunday) // Move Sunday to the end
+            shifted.append(sunday)
         }
         return shifted
     }

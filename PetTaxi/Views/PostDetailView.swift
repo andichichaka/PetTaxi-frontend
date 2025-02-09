@@ -4,17 +4,16 @@ import Combine
 struct PostDetailView: View {
     let post: Post
     @ObservedObject var viewModel: BookingViewModel
+    @StateObject var reviewViewModel: PostDetailViewModel
+    @State private var isWritingReview: Bool = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                // Image Carousel
                 imageCarouselSection
 
-                // Post Details
                 postDetailsSection
 
-                // Reviews Section
                 reviewsSection
             }
         }
@@ -41,11 +40,9 @@ struct PostDetailView: View {
 
     // MARK: - Subviews
 
-    // Image Carousel Section
     private var imageCarouselSection: some View {
         Group {
             if post.imagesUrl?.isEmpty ?? true {
-                // If no images, show a single default image
                 randomDefaultImage
                     .frame(height: 300)
                     .clipped()
@@ -54,7 +51,6 @@ struct PostDetailView: View {
                     .shadow(radius: 5)
                     .padding(.horizontal)
             } else {
-                // If images exist, show the carousel
                 TabView {
                     ForEach(post.imagesUrl ?? [], id: \.self) { imageUrl in
                         if let url = URL(string: imageUrl) {
@@ -92,10 +88,8 @@ struct PostDetailView: View {
         }
     }
 
-    // Post Details Section
     private var postDetailsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // User and Animal Type
             HStack {
                 Text(post.user?.username ?? "Unknown User")
                     .font(.custom("Vollkorn-Bold", size: 20))
@@ -106,21 +100,18 @@ struct PostDetailView: View {
                 Text(post.animalType.capitalized)
                     .font(.custom("Vollkorn-Medium", size: 16))
                     .padding(6)
-                    .background(Color.color3.opacity(0.3)) // Mint Green
+                    .background(Color.color3.opacity(0.3))
                     .cornerRadius(10)
             }
 
-            // Services and Sizes
             servicesAndSizesSection
 
-            // Description
             Text(post.description)
                 .font(.custom("Vollkorn-Regular", size: 16))
                 .foregroundColor(.black.opacity(0.7))
                 .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // "Request Booking Now" Button
             Button(action: {
                 viewModel.isBookingActive = true
             }) {
@@ -128,7 +119,7 @@ struct PostDetailView: View {
                     .font(.custom("Vollkorn-Bold", size: 18))
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.color2) // Light Green
+                    .background(Color.color2)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                     .shadow(radius: 3)
@@ -141,7 +132,6 @@ struct PostDetailView: View {
         .padding(.horizontal)
     }
 
-    // Services and Sizes Section
     private var servicesAndSizesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Services")
@@ -161,7 +151,7 @@ struct PostDetailView: View {
                         .foregroundColor(.black.opacity(0.6))
                 }
                 .padding(8)
-                .background(Color.color2.opacity(0.3)) // Light Green
+                .background(Color.color2.opacity(0.3))
                 .cornerRadius(10)
             }
 
@@ -174,7 +164,7 @@ struct PostDetailView: View {
                     Text(size.capitalized)
                         .font(.custom("Vollkorn-Medium", size: 16))
                         .padding(8)
-                        .background(Color.color.opacity(0.3)) // Dark Green
+                        .background(Color.color.opacity(0.3))
                         .foregroundColor(.black.opacity(0.8))
                         .cornerRadius(10)
                 }
@@ -182,30 +172,65 @@ struct PostDetailView: View {
         }
     }
 
-    // Reviews Section
     private var reviewsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Client Reviews")
                 .font(.custom("Vollkorn-Bold", size: 20))
                 .foregroundColor(.black)
 
-            ForEach(0..<2, id: \.self) { _ in
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.gray)
+            let reviews = $reviewViewModel.reviews
+            if !reviews.isEmpty {
+                
+                ForEach(reviews, id: \.id) { review in
+                    HStack(alignment: .top, spacing: 12) {
+                        if let profilePicUrl = review.user.wrappedValue.profilePic, let url = URL(string: profilePicUrl) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image.resizable()
+                                        .frame(width: 40, height: 40)
+                                        .clipShape(Circle())
+                                case .failure:
+                                    defaultProfileIcon
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                        } else {
+                            defaultProfileIcon
+                        }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Jane Cooper")
-                            .font(.custom("Vollkorn-Bold", size: 16))
-                            .foregroundColor(.black)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(review.user.wrappedValue.username)
+                                .font(.custom("Vollkorn-Bold", size: 16))
+                                .foregroundColor(.black)
 
-                        Text("Excellent service! Very professional and caring with my pets.")
-                            .font(.custom("Vollkorn", size: 14))
-                            .foregroundColor(.black.opacity(0.7))
+                            Text(review.wrappedValue.comment)
+                                .font(.custom("Vollkorn", size: 14))
+                                .foregroundColor(.black.opacity(0.7))
+                        }
                     }
+                    .padding(.vertical, 4)
                 }
+            } else {
+                Text("No reviews yet. Be the first to leave a review!")
+                    .font(.custom("Vollkorn", size: 14))
+                    .foregroundColor(.black.opacity(0.7))
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
+            Button(action: { isWritingReview.toggle() }) {
+                Text("Write a Review")
+                    .font(.custom("Vollkorn-Bold", size: 18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.color2)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 3)
             }
         }
         .padding()
@@ -213,9 +238,19 @@ struct PostDetailView: View {
         .cornerRadius(15)
         .shadow(radius: 5)
         .padding(.horizontal)
+        .sheet(isPresented: $isWritingReview) {
+            WriteReviewView(viewModel: reviewViewModel, isPresented: $isWritingReview)
+        }
     }
 
-    // Random Default Image
+    private var defaultProfileIcon: some View {
+        Image(systemName: "person.circle.fill")
+            .resizable()
+            .frame(width: 40, height: 40)
+            .foregroundColor(.gray)
+    }
+    // MARK: - Helper Functions
+
     private var randomDefaultImage: some View {
         let defaultImages = ["def1", "def2", "def3", "def4", "def5"]
         let randomImage = defaultImages.randomElement() ?? "def1"
@@ -226,7 +261,6 @@ struct PostDetailView: View {
             .clipped()
     }
 
-    // Helper Function to Collect Unavailable Dates
     private func collectUnavailableDates(for services: [Service]) -> [Date] {
         let formatter = ISO8601DateFormatter()
         var unavailableDates: [Date] = []

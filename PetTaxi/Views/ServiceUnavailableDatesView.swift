@@ -9,7 +9,6 @@ struct ServiceUnavailableDatesView: View {
 
     var body: some View {
         ZStack {
-            // Background
             LinearGradient(
                 gradient: Gradient(colors: [Color.color3.opacity(0.4), Color.color2.opacity(0.2)]),
                 startPoint: .top,
@@ -18,19 +17,17 @@ struct ServiceUnavailableDatesView: View {
             .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 20) {
-                // Heading at the Top
                 Text("Unavailable Dates")
-                    .font(.custom("Vollkorn-Bold", size: 24)) // Custom Font
-                    .foregroundColor(.color) // Dark Green
+                    .font(.custom("Vollkorn-Bold", size: 24))
+                    .foregroundColor(.color)
                     .padding(.top, 20)
 
                 Text("Set unavailable dates for \(viewModel.services[currentServiceIndex].serviceType.capitalized)")
-                    .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
-                    .foregroundColor(.color) // Dark Green
+                    .font(.custom("Vollkorn-Medium", size: 16))
+                    .foregroundColor(.color)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
 
-                // Calendar View
                 CalendarView(
                     selectedDates: $selectedDates,
                     unavailableDates: loadUnavailableDatesForCurrentService(),
@@ -38,15 +35,13 @@ struct ServiceUnavailableDatesView: View {
                 )
                 .padding()
 
-                // Error Message
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
-                        .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                        .font(.custom("Vollkorn-Medium", size: 14))
                         .foregroundColor(.red)
                         .padding(.horizontal)
                 }
 
-                // Navigation Buttons
                 HStack {
                     if currentServiceIndex > 0 {
                         Button("Back") {
@@ -54,10 +49,10 @@ struct ServiceUnavailableDatesView: View {
                             currentServiceIndex -= 1
                             loadDatesForCurrentService()
                         }
-                        .font(.custom("Vollkorn-Bold", size: 16)) // Custom Font
+                        .font(.custom("Vollkorn-Bold", size: 16))
                         .padding()
-                        .background(Color.color2.opacity(0.3)) // Light Green
-                        .foregroundColor(.color) // Dark Green
+                        .background(Color.color2.opacity(0.3))
+                        .foregroundColor(.color)
                         .cornerRadius(10)
                         .shadow(radius: 2)
                     }
@@ -77,9 +72,9 @@ struct ServiceUnavailableDatesView: View {
                             errorMessage = "Please select at least one unavailable date."
                         }
                     }
-                    .font(.custom("Vollkorn-Bold", size: 16)) // Custom Font
+                    .font(.custom("Vollkorn-Bold", size: 16))
                     .padding()
-                    .background(Color.color3) // Mint Green
+                    .background(Color.color3)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                     .shadow(radius: 2)

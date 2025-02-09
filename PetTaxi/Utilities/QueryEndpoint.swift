@@ -1,10 +1,3 @@
-//
-//  QueryEndpoint.swift
-//  PetTaxi
-//
-//  Created by Andrey on 15.01.25.
-//
-
 import Foundation
 
 struct QueryEndpoint {

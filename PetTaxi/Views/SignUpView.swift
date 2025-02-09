@@ -10,7 +10,6 @@ struct SignUpView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                // Sign Up Fields
                 VStack(spacing: 16) {
                     AuthTextField(
                         title: "Username",
@@ -57,7 +56,6 @@ struct SignUpView: View {
                 }
                 .padding()
 
-                // Sign Up Button
                 Button(action: {
                     let newProfile = SignUp(
                         username: viewModel.userName,
@@ -85,7 +83,6 @@ struct SignUpView: View {
                 .disabled(!viewModel.isFormValid)
                 .padding(.horizontal)
 
-                // Error message
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
@@ -106,7 +103,7 @@ struct SignUpView: View {
                             if success {
                                 DispatchQueue.main.async {
                                     showVerificationDialog = false
-                                    //UserDefaults.standard.set("user", forKey: "userRole")
+                                    UserDefaults.standard.set("user", forKey: "userRole")
                                     showHomePage = true
                                     UserDefaults.standard.set(true, forKey: "showProfileDialog")
                                 }

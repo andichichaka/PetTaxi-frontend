@@ -1,10 +1,3 @@
-//
-//  ProfilePictureDialog.swift
-//  PetTaxi
-//
-//  Created by Andrey on 29.12.24.
-//
-
 import SwiftUI
 import PhotosUI
 
