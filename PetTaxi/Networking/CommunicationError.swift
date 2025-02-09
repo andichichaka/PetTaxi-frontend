@@ -1,10 +1,3 @@
-//
-//  CommunicationError.swift
-//  PetTaxi
-//
-//  Created by Andrey on 27.12.24.
-//
-
 enum CommunicationError: Error {
     case invalidURL
     case encodingFailed

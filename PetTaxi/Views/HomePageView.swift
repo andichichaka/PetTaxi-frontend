@@ -11,18 +11,14 @@ struct HomePageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Live Blurry Background (without scroll interaction)
                 LiveBlurryBackground()
                     .edgesIgnoringSafeArea(.all)
 
-                // Post List (Scrolls behind the top bar)
                 ScrollView {
                     VStack(spacing: 16) {
-                        // Add padding to the top to account for the floating top bar
                         Spacer()
-                            .frame(height: 120) // Adjust this value to match the top bar height
+                            .frame(height: 120)
 
-                        // Posts
                         if viewModel.posts.isEmpty {
                             if let errorMessage = viewModel.errorMessage {
                                 Text(errorMessage)
@@ -43,12 +39,10 @@ struct HomePageView: View {
                     .padding(.vertical)
                 }
 
-                // Floating Top Bar
                 VStack {
                     HStack {
-                        // App Logo and Name
                         HStack(alignment: .center, spacing: -10) {
-                            Image("AppLogo") // Use the logo from Assets.xcassets
+                            Image("AppLogo")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
@@ -60,7 +54,6 @@ struct HomePageView: View {
 
                         Spacer()
 
-                        // Search Button
                         Button(action: {
                             showSearchFilter = true
                         }) {
@@ -75,12 +68,11 @@ struct HomePageView: View {
                     .cornerRadius(15)
                     .padding(.horizontal)
                     .padding(.top, 5)
-                    .zIndex(1) // Ensure the top bar stays above the posts
+                    .zIndex(1)
 
-                    Spacer() // Push the top bar to the top
+                    Spacer()
                 }
 
-                // Dialogs and Modals
                 if showProfilePictureDialog {
                     ProfilePictureDialog(isActive: $showProfilePictureDialog) {
                         showRoleSelectionDialog = true
@@ -104,7 +96,7 @@ struct HomePageView: View {
                                 .edgesIgnoringSafeArea(.all)
                         )
                         .transition(.opacity)
-                        .zIndex(2) // Ensure the search filter is above everything
+                        .zIndex(2)
                 }
             }
             .onAppear {
@@ -119,13 +111,11 @@ struct HomePageView: View {
     }
 }
 
-// Live Blurry Background with Self-Moving Bubbles (No Scroll Interaction)
 struct LiveBlurryBackground: View {
     @State private var bubbleOffset: CGFloat = 0
 
     var body: some View {
         ZStack {
-            // Gradient Background
             LinearGradient(
                 gradient: Gradient(colors: [Color.color3.opacity(0.8), Color.color.opacity(0.8)]),
                 startPoint: .top,
@@ -133,7 +123,6 @@ struct LiveBlurryBackground: View {
             )
             .edgesIgnoringSafeArea(.all)
 
-            // Self-Moving Bubbles
             ForEach(0..<20) { _ in
                 Circle()
                     .fill(Color.white.opacity(0.2))
@@ -142,16 +131,16 @@ struct LiveBlurryBackground: View {
                         x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
                         y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
                     )
-                    .offset(x: bubbleOffset, y: 0) // Move on its own
+                    .offset(x: bubbleOffset, y: 0)
                     .animation(
                         Animation.easeInOut(duration: 4).repeatForever(autoreverses: true),
                         value: bubbleOffset
                     )
             }
         }
-        .blur(radius: 10) // Blur the entire background
+        .blur(radius: 10)
         .onAppear {
-            bubbleOffset = 20 // Initial bubble movement
+            bubbleOffset = 20
         }
     }
 }

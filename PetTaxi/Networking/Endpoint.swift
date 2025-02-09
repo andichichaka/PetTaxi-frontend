@@ -1,10 +1,3 @@
-//
-//  Endpoint.swift
-//  PetTaxi
-//
-//  Created by Andrey on 26.12.24.
-//
-
 import Foundation
 
 enum Endpoint {
@@ -23,14 +16,16 @@ enum Endpoint {
     case bookingApprove(Int)
     case updatePostImages(Int)
     case deletePost(Int)
-    case custom(String) // For dynamic or ad-hoc URLs
+    case createReview(Int)
+    case getReviews(Int)
+    case refreshToken
+    case verifyToken
+    case custom(String)
 
-    // Computed property for the base URL
     private var baseURL: String {
-        return "http://localhost:3000"
+        return "http://192.168.0.118:3000"
     }
 
-    // Computed property for the full URL
     var url: String {
         switch self {
         case .signUp:
@@ -63,6 +58,14 @@ enum Endpoint {
             return "\(baseURL)/posts/\(id)/images"
         case .deletePost(let id):
             return "\(baseURL)/posts/delete/\(id)"
+        case .createReview(let id):
+            return "\(baseURL)/reviews/create/\(id)"
+        case .getReviews(let id):
+            return "\(baseURL)/reviews/get/\(id)"
+        case .refreshToken:
+            return "\(baseURL)/auth/refresh"
+        case .verifyToken:
+            return "\(baseURL)/auth/verify"
         case .custom(let customPath):
             return "\(baseURL)/\(customPath)"
         }
@@ -70,9 +73,9 @@ enum Endpoint {
 
     var method: HTTPMethod {
             switch self {
-            case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking:
+            case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking, .createReview, .refreshToken, .verifyToken:
                 return .POST
-            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove:
+            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews:
                 return .GET
             case .updatePic, .updateProfile:
                 return .PUT

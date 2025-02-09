@@ -1,10 +1,3 @@
-//
-//  RoleSelectionDialog.swift
-//  PetTaxi
-//
-//  Created by Andrey on 8.01.25.
-//
-
 import SwiftUI
 
 struct RoleSelectionDialog: View {
@@ -46,7 +39,7 @@ struct RoleSelectionDialog: View {
 
                     Button(action: {
                         submitRole("user")
-                        UserDefaults.standard.set("user", forKey: "userRole")// `User` maps to `user`
+                        UserDefaults.standard.set("user", forKey: "userRole")
                     }) {
                         RoleOptionView(
                             title: "Regular User",
@@ -86,6 +79,7 @@ struct RoleSelectionDialog: View {
             DispatchQueue.main.async {
                 isSubmitting = false
                 if success {
+                    isSubmitting = false
                     close()
                 } else {
                     errorMessage = viewModel.errorMessage

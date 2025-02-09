@@ -1,10 +1,3 @@
-//
-//  RoleManager.swift
-//  PetTaxi
-//
-//  Created by Andrey on 13.01.25.
-//
-
 import Combine
 import SwiftUI
 

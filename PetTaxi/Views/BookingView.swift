@@ -2,30 +2,28 @@ import SwiftUI
 
 struct BookingView: View {
     @ObservedObject var viewModel: BookingViewModel
-    let availableServices: [Service] // Only available services
+    let availableServices: [Service]
     let unavailableDates: [Date]
-    let availableAnimalSizes: [String] // Only available animal sizes
+    let availableAnimalSizes: [String]
     let animalType: String
     @State private var isCalendarViewActive: Bool = false
-    @Binding var isActive: Bool // To close the view
+    @Binding var isActive: Bool
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background Gradient
                 LinearGradient(gradient: Gradient(colors: [Color.color.opacity(0.1), Color.color1]), startPoint: .top, endPoint: .bottom)
                     .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 20) {
-                    // Services Selection
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Choose Service")
-                            .font(.custom("Vollkorn-Bold", size: 20)) // Custom Font
-                            .foregroundColor(.color) // Dark Green
+                            .font(.custom("Vollkorn-Bold", size: 20))
+                            .foregroundColor(.color)
 
                         if availableServices.isEmpty {
                             Text("No services available")
-                                .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                                .font(.custom("Vollkorn-Medium", size: 16))
                                 .foregroundColor(.gray)
                                 .padding()
                         } else {
@@ -36,15 +34,14 @@ struct BookingView: View {
                     }
                     .padding()
 
-                    // Animal Size Selection
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Animal Size")
-                            .font(.custom("Vollkorn-Bold", size: 20)) // Custom Font
-                            .foregroundColor(.color) // Dark Green
+                            .font(.custom("Vollkorn-Bold", size: 20))
+                            .foregroundColor(.color)
 
                         if availableAnimalSizes.isEmpty {
                             Text("No sizes available")
-                                .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                                .font(.custom("Vollkorn-Medium", size: 16))
                                 .foregroundColor(.gray)
                                 .padding()
                         } else {
@@ -57,16 +54,15 @@ struct BookingView: View {
 
                     Spacer()
 
-                    // Next Button
                     Button(action: {
                         viewModel.isDateSelectionActive = true
                     }) {
                         Text("Next")
-                            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                            .font(.custom("Vollkorn-Bold", size: 18))
                             .bold()
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(viewModel.selectedServiceIds.isEmpty ? Color.gray : Color.color3) // Mint Green
+                            .background(viewModel.selectedServiceIds.isEmpty ? Color.gray : Color.color3)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                             .shadow(radius: 2)
@@ -74,16 +70,15 @@ struct BookingView: View {
                     .padding(.horizontal)
                     .disabled(viewModel.selectedServiceIds.isEmpty)
 
-                    // Close Button at the Bottom
                     Button(action: {
-                        isActive = false // Close the view
+                        isActive = false
                     }) {
                         Text("Close")
-                            .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                            .font(.custom("Vollkorn-Bold", size: 18))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.color) // Dark Green
+                            .background(Color.color)
                             .cornerRadius(10)
                             .shadow(radius: 2)
                     }
@@ -95,7 +90,7 @@ struct BookingView: View {
                 MultiServiceCalendarView(viewModel: viewModel, services: selectedServices, unavailableDates: unavailableDates)
             }
         }
-        .navigationBarBackButtonHidden(true) // Remove the default back button
+        .navigationBarBackButtonHidden(true)
         .navigationTitle("Request Booking")
     }
 
@@ -111,11 +106,11 @@ struct BookingView: View {
     private func serviceSelectionView(for service: Service) -> some View {
         let isSelected = viewModel.selectedServiceIds.contains(service.id!)
         return Text(service.serviceType.capitalized)
-            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+            .font(.custom("Vollkorn-Medium", size: 16))
             .padding()
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.color3.opacity(0.7) : Color.color2.opacity(0.3)) // Mint Green or Light Green
-            .foregroundColor(isSelected ? .white : .color) // Dark Green
+            .background(isSelected ? Color.color3.opacity(0.7) : Color.color2.opacity(0.3))
+            .foregroundColor(isSelected ? .white : .color)
             .cornerRadius(10)
             .shadow(radius: 2)
             .onTapGesture {
@@ -126,11 +121,11 @@ struct BookingView: View {
     private func sizeSelectionView(for size: String) -> some View {
         let isSelected = viewModel.selectedAnimalSize == size
         return Text(size)
-            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+            .font(.custom("Vollkorn-Medium", size: 16))
             .padding()
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.color3.opacity(0.7) : Color.color2.opacity(0.3)) // Mint Green or Light Green
-            .foregroundColor(isSelected ? .white : .color) // Dark Green
+            .background(isSelected ? Color.color3.opacity(0.7) : Color.color2.opacity(0.3))
+            .foregroundColor(isSelected ? .white : .color)
             .cornerRadius(10)
             .shadow(radius: 2)
             .onTapGesture {

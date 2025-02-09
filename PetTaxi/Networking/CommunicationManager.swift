@@ -1,10 +1,3 @@
-//
-//  CommunicationManager.swift
-//  PetTaxi
-//
-//  Created by Andrey on 26.12.24.
-//
-
 import Foundation
 import UIKit
 
@@ -31,7 +24,7 @@ final class CommunicationManager {
         request.httpMethod = endpoint.method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        if let token = tokenManager.getToken() {
+        if let token = tokenManager.getAccessToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
@@ -51,10 +44,22 @@ final class CommunicationManager {
                 return
             }
 
-            if let httpResponse = response as? HTTPURLResponse,
-               !(200...299).contains(httpResponse.statusCode) {
-                completion(.failure(.httpError(httpResponse.statusCode)))
-                return
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 401 {
+                    self.tokenManager.refreshToken { success in
+                        if success {
+                            self.execute(endpoint: endpoint, responseType: responseType, completion: completion)
+                        } else {
+                            completion(.failure(.httpError(httpResponse.statusCode)))
+                        }
+                    }
+                    return
+                }
+
+                if !(200...299).contains(httpResponse.statusCode) {
+                    completion(.failure(.httpError(httpResponse.statusCode)))
+                    return
+                }
             }
 
             guard let data = data else {
@@ -90,7 +95,7 @@ extension CommunicationManager {
         
         var request = URLRequest(url: url)
         request.httpMethod = endpoint.method.rawValue
-        if let token = tokenManager.getToken() {
+        if let token = tokenManager.getAccessToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             print("\(token)")
         }
@@ -112,9 +117,22 @@ extension CommunicationManager {
                 return
             }
             
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                completion(.failure(.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)))
-                return
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 401 {
+                    self.tokenManager.refreshToken { success in
+                        if success {
+                            self.uploadFile(endpoint: endpoint, fileData: fileData, fieldName: fieldName, fileName: fileName, mimeType: mimeType, completion: completion)
+                        } else {
+                            completion(.failure(.httpError(httpResponse.statusCode)))
+                        }
+                    }
+                    return
+                }
+
+                if !(200...299).contains(httpResponse.statusCode) {
+                    completion(.failure(.httpError(httpResponse.statusCode)))
+                    return
+                }
             }
             
             completion(.success(()))
@@ -133,7 +151,7 @@ extension CommunicationManager {
         
         var request = URLRequest(url: url)
         request.httpMethod = endpoint.method.rawValue
-        if let token = tokenManager.getToken() {
+        if let token = tokenManager.getAccessToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             print("\(token)")
         }
@@ -158,9 +176,22 @@ extension CommunicationManager {
                 return
             }
             
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                completion(.failure(.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)))
-                return
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 401 {
+                    self.tokenManager.refreshToken { success in
+                        if success {
+                            self.uploadMultipleFiles(endpoint: endpoint, files: files, completion: completion)
+                        } else {
+                            completion(.failure(.httpError(httpResponse.statusCode)))
+                        }
+                    }
+                    return
+                }
+
+                if !(200...299).contains(httpResponse.statusCode) {
+                    completion(.failure(.httpError(httpResponse.statusCode)))
+                    return
+                }
             }
             
             completion(.success(()))

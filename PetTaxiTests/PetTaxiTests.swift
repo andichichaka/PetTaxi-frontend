@@ -1,10 +1,3 @@
-//
-//  PetTaxiTests.swift
-//  PetTaxiTests
-//
-//  Created by Andrey on 23.12.24.
-//
-
 import Testing
 @testable import PetTaxi
 

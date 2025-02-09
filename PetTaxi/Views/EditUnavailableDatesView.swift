@@ -17,7 +17,6 @@ struct EditUnavailableDatesView: View {
                     .font(.headline)
                     .multilineTextAlignment(.center)
 
-                // Calendar View for Selecting Dates
                 CalendarView(
                     selectedDates: $selectedDates,
                     unavailableDates: loadUnavailableDates(),
@@ -30,7 +29,6 @@ struct EditUnavailableDatesView: View {
                         .font(.caption)
                 }
 
-                // "Done" Button
                 Button(action: saveDates) {
                     Text("Done")
                         .bold()
@@ -60,7 +58,6 @@ struct EditUnavailableDatesView: View {
 
     // MARK: - Helper Methods
 
-    /// Saves the selected unavailable dates to the service
     private func saveDates() {
         if selectedDates.isEmpty {
             errorMessage = "Please select at least one unavailable date."
@@ -72,13 +69,11 @@ struct EditUnavailableDatesView: View {
         isPresented = false
     }
 
-    /// Loads initially saved unavailable dates
     private func loadSelectedDates() {
         let formatter = ISO8601DateFormatter()
         selectedDates = Set(service.unavailableDates.compactMap { formatter.date(from: $0 ?? "") })
     }
 
-    /// Loads unavailable dates as an array of `Date`
     private func loadUnavailableDates() -> [Date] {
         let formatter = ISO8601DateFormatter()
         return service.unavailableDates.compactMap { formatter.date(from: $0 ?? "") }

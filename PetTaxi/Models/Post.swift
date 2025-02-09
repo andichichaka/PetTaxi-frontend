@@ -1,28 +1,16 @@
-//
-//  Post.swift
-//  PetTaxi
-//
-//  Created by Andrey on 26.12.24.
-//
-
 import Foundation
+import SwiftUI
 
 struct Post: Identifiable, Codable {
     let id: Int
     var imagesUrl: [String]?
     var description: String
-    let animalType: String
-    let animalSizes: [String]
+    var animalType: String
+    var animalSizes: [String]
     let user: User?
     var services: [Service]
+    var reviews: [Review]?
 }
-
-//struct CreatePostRequest: Codable {
-//    let description: String
-//    let serviceTypes: [String]
-//    let animalType: String
-//    let animalSizes: [String]
-//}
 
 struct CreatePostRequest: Codable {
     let description: String
@@ -39,14 +27,6 @@ struct Service: Codable {
     var unavailableDates: [String?]
     let post: Post?
 }
-
-//struct Booking: Codable {
-//    let id: Int
-//    let serviceId: Int
-//    let userId: Int
-//    let bookingDate: String
-//    let notes: String?
-//}
 
 struct CreateServiceRequest: Codable {
     let serviceType: String
