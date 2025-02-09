@@ -7,21 +7,17 @@ struct FilteredPostsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Live Blurry Background
                 LiveBlurryBackground()
                     .edgesIgnoringSafeArea(.all)
 
-                // Post List (Scrolls behind the top bar)
                 ScrollView {
                     VStack(spacing: 16) {
-                        // Add padding to the top to account for the floating top bar
                         Spacer()
-                            .frame(height: 120) // Adjust this value to match the top bar height
+                            .frame(height: 120)
 
-                        // Posts
                         if viewModel.filteredPosts.isEmpty {
                             Text("No posts match your filters.")
-                                .font(.custom("Vollkorn-Medium", size: 18)) // Custom Font
+                                .font(.custom("Vollkorn-Medium", size: 18))
                                 .foregroundColor(.white)
                                 .padding()
                         } else {
@@ -33,10 +29,8 @@ struct FilteredPostsView: View {
                     .padding(.vertical)
                 }
 
-                // Floating Top Bar
                 VStack {
                     HStack {
-                        // Back Button
                         Button(action: {
                             isActive = false
                         }) {
@@ -46,9 +40,8 @@ struct FilteredPostsView: View {
                                 .padding(.trailing, 8)
                         }
 
-                        // Title
                         Text("Search Results")
-                            .font(.custom("LilitaOne", size: 28)) // Custom Font
+                            .font(.custom("LilitaOne", size: 28))
                             .foregroundColor(.white)
 
                         Spacer()
@@ -59,9 +52,9 @@ struct FilteredPostsView: View {
                     .cornerRadius(15)
                     .padding(.horizontal)
                     .padding(.top, 5)
-                    .zIndex(1) // Ensure the top bar stays above the posts
+                    .zIndex(1)
 
-                    Spacer() // Push the top bar to the top
+                    Spacer()
                 }
             }
         }

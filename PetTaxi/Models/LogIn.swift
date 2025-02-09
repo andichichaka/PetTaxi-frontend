@@ -1,10 +1,3 @@
-//
-//  LogIn.swift
-//  Jigit
-//
-//  Created by Andrey on 12.07.24.
-//
-
 import Foundation
 
 struct LogIn: Codable {
@@ -16,5 +9,6 @@ struct LoginResponse: Codable {
     let success: Bool
     let message: String?
     let access_token: String?
+    let refresh_token: String?
     let user: User?
 }

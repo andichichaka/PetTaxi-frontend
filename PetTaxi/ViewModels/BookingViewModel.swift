@@ -1,9 +1,9 @@
 import Foundation
 
 final class BookingViewModel: ObservableObject {
-    @Published var selectedServiceIds: [Int] = [] // List of selected service IDs
-    @Published var selectedAnimalSize: String? // Selected animal size
-    @Published var bookingDates: [Int: Set<Date>] = [:] // ServiceID -> Selected Dates
+    @Published var selectedServiceIds: [Int] = []
+    @Published var selectedAnimalSize: String?
+    @Published var bookingDates: [Int: Set<Date>] = [:]
     @Published var notes: String = ""
     @Published var errorMessage: String?
     @Published var isSubmitting = false
@@ -21,14 +21,12 @@ final class BookingViewModel: ObservableObject {
     private let communicationManager = CommunicationManager.shared
 
     func createBooking(serviceId: Int, completion: @escaping (Bool) -> Void) {
-        // Ensure there are dates for the selected service
         guard let dates = bookingDates[serviceId]?.map({ $0.toISO8601String() }), !dates.isEmpty else {
             errorMessage = "Please select at least one date for the service."
             completion(false)
             return
         }
 
-        // Prepare booking request
         let request = CreateBookingRequest(
             serviceId: serviceId,
             animalType: animalType.lowercased(),

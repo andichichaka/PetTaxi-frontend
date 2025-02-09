@@ -19,7 +19,6 @@ struct CreatePostView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background
                 LinearGradient(
                     gradient: Gradient(colors: [Color.color2.opacity(0.2), Color.white]),
                     startPoint: .top,
@@ -29,39 +28,30 @@ struct CreatePostView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Title
                         Text("Create New Post")
-                            .font(.custom("Vollkorn-Bold", size: 28)) // Custom Font
-                            .foregroundColor(.color) // Dark Green
+                            .font(.custom("Vollkorn-Bold", size: 28))
+                            .foregroundColor(.color)
                             .padding(.top, 20)
 
-                        // Description Field
                         descriptionField
 
-                        // Animal Type Picker
                         animalTypePicker
 
-                        // Service Type Selection
                         serviceTypeSelection
 
-                        // Animal Size Selection
                         animalSizeSelection
 
-                        // Upload Photo Section
                         uploadPhotoSection
 
-                        // Next Button
                         nextButton
 
-                        // Error Message
                         if let errorMessage = errorMessage {
                             Text(errorMessage)
-                                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
+                                .font(.custom("Vollkorn-Medium", size: 14))
                                 .foregroundColor(.red)
                                 .padding(.horizontal)
                         }
 
-                        // Close Button
                         closeButton
                     }
                     .padding()
@@ -78,12 +68,12 @@ struct CreatePostView: View {
     private var descriptionField: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-                .foregroundColor(.color) // Dark Green
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
 
             TextEditor(text: $description)
-                .font(.custom("Vollkorn-Regular", size: 16)) // Custom Font
-                .frame(minHeight: 100) // Expandable height
+                .font(.custom("Vollkorn-Regular", size: 16))
+                .frame(minHeight: 100)
                 .padding()
                 .background(Color.white)
                 .cornerRadius(15)
@@ -94,13 +84,13 @@ struct CreatePostView: View {
     private var animalTypePicker: some View {
         VStack(alignment: .leading) {
             Text("Animal Type")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-                .foregroundColor(.color) // Dark Green
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
 
             Picker("Select Animal Type", selection: $animalType) {
                 ForEach(animalTypeOptions, id: \.self) { type in
                     Text(type)
-                        .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                        .font(.custom("Vollkorn-Medium", size: 16))
                         .tag(type)
                 }
             }
@@ -114,10 +104,9 @@ struct CreatePostView: View {
     private var serviceTypeSelection: some View {
         VStack(alignment: .leading) {
             Text("Service Types")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-                .foregroundColor(.color) // Dark Green
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
 
-            // Two services per row
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(serviceTypeOptions, id: \.self) { type in
                     Button(action: {
@@ -128,11 +117,11 @@ struct CreatePostView: View {
                         }
                     }) {
                         Text(type)
-                            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                            .font(.custom("Vollkorn-Medium", size: 16))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(serviceTypes.contains(type) ? Color.color3 : Color.color2.opacity(0.3)) // Mint Green or Light Green
-                            .foregroundColor(serviceTypes.contains(type) ? .white : .color) // Dark Green
+                            .background(serviceTypes.contains(type) ? Color.color3 : Color.color2.opacity(0.3))
+                            .foregroundColor(serviceTypes.contains(type) ? .white : .color)
                             .cornerRadius(10)
                             .shadow(radius: 2)
                     }
@@ -144,10 +133,9 @@ struct CreatePostView: View {
     private var animalSizeSelection: some View {
         VStack(alignment: .leading) {
             Text("Animal Sizes")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-                .foregroundColor(.color) // Dark Green
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
 
-            // Two sizes per row
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(animalSizeOptions, id: \.self) { size in
                     Button(action: {
@@ -158,11 +146,11 @@ struct CreatePostView: View {
                         }
                     }) {
                         Text(size)
-                            .font(.custom("Vollkorn-Medium", size: 16)) // Custom Font
+                            .font(.custom("Vollkorn-Medium", size: 16))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(animalSizes.contains(size) ? Color.color3 : Color.color2.opacity(0.3)) // Mint Green or Light Green
-                            .foregroundColor(animalSizes.contains(size) ? .white : .color) // Dark Green
+                            .background(animalSizes.contains(size) ? Color.color3 : Color.color2.opacity(0.3))
+                            .foregroundColor(animalSizes.contains(size) ? .white : .color)
                             .cornerRadius(10)
                             .shadow(radius: 2)
                     }
@@ -174,8 +162,8 @@ struct CreatePostView: View {
     private var uploadPhotoSection: some View {
         VStack(alignment: .leading) {
             Text("Upload Photos")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
-                .foregroundColor(.color) // Dark Green
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
 
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 10) {
@@ -194,10 +182,10 @@ struct CreatePostView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
-                                .foregroundColor(.color) // Dark Green
+                                .foregroundColor(.color)
                             Text("Upload")
-                                .font(.custom("Vollkorn-Medium", size: 14)) // Custom Font
-                                .foregroundColor(.color) // Dark Green
+                                .font(.custom("Vollkorn-Medium", size: 14))
+                                .foregroundColor(.color)
                         }
                         .frame(width: 150, height: 150)
                         .background(Color.white)
@@ -224,7 +212,6 @@ struct CreatePostView: View {
     private var nextButton: some View {
         Button(action: {
             if validateForm() {
-                // Update the ViewModel before navigating
                 viewModel.description = description
                 viewModel.animalType = animalType.lowercased()
                 viewModel.animalSizes = animalSizes.map { $0.lowercased() }
@@ -242,10 +229,10 @@ struct CreatePostView: View {
             }
         }) {
             Text("Next")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .font(.custom("Vollkorn-Bold", size: 18))
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.color3) // Mint Green
+                .background(Color.color3)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .shadow(radius: 5)
@@ -257,10 +244,10 @@ struct CreatePostView: View {
             isActive = false
         }) {
             Text("Close")
-                .font(.custom("Vollkorn-Bold", size: 18)) // Custom Font
+                .font(.custom("Vollkorn-Bold", size: 18))
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.color) // Dark Green
+                .background(Color.color)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .shadow(radius: 5)

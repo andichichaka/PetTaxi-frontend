@@ -5,11 +5,10 @@ struct MultiServiceCalendarView: View {
     let services: [Service]
     let unavailableDates: [Date]
     @State private var currentServiceIndex = 0
-    @State private var isAddNotesViewActive: Bool = false // Navigation to AddNotesView
+    @State private var isAddNotesViewActive: Bool = false
 
     var body: some View {
         ZStack {
-            // Background
             LinearGradient(
                 gradient: Gradient(colors: [Color.color3.opacity(0.4), Color.color2.opacity(0.2)]),
                 startPoint: .top,
@@ -18,14 +17,12 @@ struct MultiServiceCalendarView: View {
             .edgesIgnoringSafeArea(.all)
 
             VStack {
-                // Heading at the Top
                 Text("Select Dates for \(services[currentServiceIndex].serviceType.capitalized)")
-                    .font(.custom("Vollkorn-Bold", size: 24)) // Custom Font
-                    .foregroundColor(.color) // Dark Green
+                    .font(.custom("Vollkorn-Bold", size: 24))
+                    .foregroundColor(.color)
                     .padding(.top, 20)
                     .padding(.horizontal)
 
-                // Calendar View
                 CalendarView(
                     selectedDates: Binding(
                         get: { viewModel.bookingDates[services[currentServiceIndex].id!] ?? [] },
@@ -36,16 +33,15 @@ struct MultiServiceCalendarView: View {
                 )
                 .padding()
 
-                // Navigation Buttons
                 HStack {
                     if currentServiceIndex > 0 {
                         Button("Back") {
                             currentServiceIndex -= 1
                         }
-                        .font(.custom("Vollkorn-Bold", size: 16)) // Custom Font
+                        .font(.custom("Vollkorn-Bold", size: 16))
                         .padding()
-                        .background(Color.color2.opacity(0.3)) // Light Green
-                        .foregroundColor(.color) // Dark Green
+                        .background(Color.color2.opacity(0.3))
+                        .foregroundColor(.color)
                         .cornerRadius(10)
                         .shadow(radius: 2)
                     }
@@ -56,9 +52,9 @@ struct MultiServiceCalendarView: View {
                         Button("Next") {
                             currentServiceIndex += 1
                         }
-                        .font(.custom("Vollkorn-Bold", size: 16)) // Custom Font
+                        .font(.custom("Vollkorn-Bold", size: 16))
                         .padding()
-                        .background(Color.color3) // Mint Green
+                        .background(Color.color3)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                         .shadow(radius: 2)
@@ -67,9 +63,9 @@ struct MultiServiceCalendarView: View {
                             viewModel.isNotedActive = true
                         }) {
                             Text("Next")
-                                .font(.custom("Vollkorn-Bold", size: 16)) // Custom Font
+                                .font(.custom("Vollkorn-Bold", size: 16))
                                 .padding()
-                                .background(Color.color3) // Mint Green
+                                .background(Color.color3)
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                                 .shadow(radius: 2)

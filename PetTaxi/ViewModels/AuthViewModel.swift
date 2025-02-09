@@ -132,8 +132,8 @@ class AuthViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let response):
-                    if response.success, let token = response.access_token {
-                        TokenManager.shared.saveToken(token)
+                    if response.success, let access_token = response.access_token, let refresh_token = response.refresh_token {
+                        TokenManager.shared.saveTokens(accessToken: access_token, refreshToken: refresh_token)
                         completion(true)
                     } else {
                         self.errorMessage = response.message ?? "Verification failed."
