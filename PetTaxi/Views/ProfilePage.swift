@@ -11,6 +11,7 @@ struct ProfilePage: View {
     @State private var selectedPost: Post?
     @State private var showEditPostView = false
     @State private var navigateToAuth = false
+    @StateObject private var roleManager = RoleManager()
 
     var body: some View {
         NavigationStack {
@@ -98,6 +99,18 @@ struct ProfilePage: View {
                             }
                             
                             Spacer()
+                            
+                            NavigationLink(destination: RequestedBookingsView()) {
+                                Text(roleManager.userRole == "admin" ? "Requested Bookings" : "Approved Requests")
+                                    .font(.custom("Vollkorn-Bold", size: 18))
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.color3)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                                    .shadow(radius: 5)
+                            }
+                            .padding(.horizontal)
                                                         
                             logoutButton
                         }
