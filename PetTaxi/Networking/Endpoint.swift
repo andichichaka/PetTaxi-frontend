@@ -20,10 +20,14 @@ enum Endpoint {
     case getReviews(Int)
     case refreshToken
     case verifyToken
+    case fetchPendingRequests
+    case fetchApprovedRequests
+    case approveRequest(Int)
+    case disaproveRequest(Int)
     case custom(String)
 
     private var baseURL: String {
-        return "http://192.168.0.118:3000"
+        return "http://localhost:3000"
     }
 
     var url: String {
@@ -66,6 +70,14 @@ enum Endpoint {
             return "\(baseURL)/auth/refresh"
         case .verifyToken:
             return "\(baseURL)/auth/verify"
+        case .fetchPendingRequests:
+            return "\(baseURL)/bookings/pending"
+        case .fetchApprovedRequests:
+            return "\(baseURL)/bookings/approved"
+        case .approveRequest(let id):
+            return "\(baseURL)/bookings/approve/\(id)"
+        case .disaproveRequest(let id):
+            return "\(baseURL)/bookings/disapprove/\(id)"
         case .custom(let customPath):
             return "\(baseURL)/\(customPath)"
         }
@@ -75,11 +87,11 @@ enum Endpoint {
             switch self {
             case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking, .createReview, .refreshToken, .verifyToken:
                 return .POST
-            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews:
+            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews, .fetchPendingRequests, .fetchApprovedRequests:
                 return .GET
-            case .updatePic, .updateProfile:
+            case .updatePic, .updateProfile, .approveRequest:
                 return .PUT
-            case .setRole, .updatePostImages:
+            case .setRole, .updatePostImages, .disaproveRequest:
                 return .PATCH
             case .deletePost:
                 return .DELETE
