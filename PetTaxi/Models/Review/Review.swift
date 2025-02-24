@@ -4,8 +4,3 @@ struct Review: Identifiable, Decodable, Encodable {
     var user: User
     let createdAt: String
 }
-
-struct CreateReviewRequest: Codable {
-    let postId: Int
-    let comment: String
-}
