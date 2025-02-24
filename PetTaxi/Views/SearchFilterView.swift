@@ -181,18 +181,6 @@ struct SearchFilterView: View {
     }
 }
 
-struct CheckboxToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack {
-            configuration.label
-            Spacer()
-            Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
-                .foregroundColor(.color3)
-                .onTapGesture { configuration.isOn.toggle() }
-        }
-    }
-}
-
 // MARK: - Preview
 struct SearchFilterView_Previews: PreviewProvider {
     static var previews: some View {

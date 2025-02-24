@@ -210,7 +210,7 @@ final class ProfileViewModel: ObservableObject {
         isLoading = true
         communicationManager.execute(
             endpoint: .deletePost(postId),
-            responseType: DeletePostResponse.self
+            responseType: MessageResponse.self
         ) { result in
             DispatchQueue.main.async {
                 self.isLoading = false
