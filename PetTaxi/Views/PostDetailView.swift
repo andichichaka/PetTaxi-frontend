@@ -3,8 +3,8 @@ import Combine
 
 struct PostDetailView: View {
     let post: Post
-    @ObservedObject var viewModel: BookingViewModel
-    @StateObject var reviewViewModel: PostDetailViewModel
+    @ObservedObject var viewModel: BookingViewModel =  BookingViewModel(animalType: "")
+    @StateObject var reviewViewModel: PostDetailViewModel = PostDetailViewModel(post: Post(id: -1, description: "", animalType: "", animalSizes: [], user: User(id: -1, access_token: "", refresh_token: "", email: "", username: "", role: "", description: "", profilePic: "", isEmailVerified: false ), services: [], reviews: []))
     @State private var isWritingReview: Bool = false
 
     var body: some View {
