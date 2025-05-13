@@ -17,6 +17,7 @@ struct PostDetailEditView: View {
     let allServiceTypeOptions = ["Daily Walking", "Weekly Walking", "Daily Sitting", "Weekly Sitting", "Other"]
     let allAnimalSizeOptions = ["Mini (0-5kg)", "Small (5-10kg)", "Medium (10-15kg)", "Large (15-25kg)", "Other"]
     let allAnimalTypeOptions = ["Dog", "Cat", "Both"]
+    @State private var allLocations: [Location] = []
 
     var body: some View {
         NavigationStack {
@@ -25,6 +26,8 @@ struct PostDetailEditView: View {
                     imagesSection
 
                     descriptionSection
+                    
+                    locationPicker
 
                     servicesSection
 
@@ -77,6 +80,23 @@ struct PostDetailEditView: View {
             }
             .onAppear {
                 loadExistingPostImages()
+                fetchLocations()
+            }
+        }
+    }
+    
+    private func fetchLocations() {
+        CommunicationManager.shared.execute(
+            endpoint: .getAllLocations,
+            responseType: [Location].self
+        ) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let locations):
+                    allLocations = locations
+                case .failure(let error):
+                    print("Failed to load locations: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -162,6 +182,34 @@ struct PostDetailEditView: View {
                 .background(Color.white)
                 .cornerRadius(10)
                 .shadow(radius: 2)
+        }
+        .padding()
+    }
+    
+    // MARK: - Locations picker Section
+    private var locationPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Location")
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
+
+            Picker("Select Location", selection: Binding(
+                get: { post.location?.id ?? allLocations.first?.id ?? -1 },
+                set: { selectedId in
+                    post.location = allLocations.first(where: { $0.id == selectedId })
+                })
+            ) {
+                ForEach(allLocations) { location in
+                    Text(location.name)
+                        .tag(location.id)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(radius: 2)
         }
         .padding()
     }

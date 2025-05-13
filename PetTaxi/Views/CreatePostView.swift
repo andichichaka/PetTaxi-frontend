@@ -34,6 +34,8 @@ struct CreatePostView: View {
                             .padding(.top, 20)
 
                         descriptionField
+                        
+                        locationPicker
 
                         animalTypePicker
 
@@ -61,6 +63,9 @@ struct CreatePostView: View {
                 SetPricesView(viewModel: viewModel, isActive: $isActive)
             }
         }
+        .onAppear {
+            viewModel.fetchLocations()
+        }
     }
 
     // MARK: - Subviews
@@ -78,6 +83,26 @@ struct CreatePostView: View {
                 .background(Color.white)
                 .cornerRadius(15)
                 .shadow(radius: 2)
+        }
+    }
+    
+    private var locationPicker: some View {
+        VStack(alignment: .leading) {
+            Text("Select Location")
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
+
+            Picker("Location", selection: $viewModel.selectedLocationId) {
+                ForEach(viewModel.locations) { location in
+                    Text(location.name).tag(location.id as Int?)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(radius: 2)
         }
     }
 
@@ -259,8 +284,10 @@ struct CreatePostView: View {
     private func validateForm() -> Bool {
         return !description.isEmpty &&
             !serviceTypes.isEmpty &&
-            !animalSizes.isEmpty
+            !animalSizes.isEmpty &&
+            viewModel.selectedLocationId != nil
     }
+
 }
 
 #Preview {

@@ -8,6 +8,8 @@ final class SearchFilterViewModel: ObservableObject {
     @Published var filteredPosts: [Post] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var selectedLocationId: Int?
+    @Published var locations: [Location] = []
 
     private let communicationManager = CommunicationManager.shared
 
@@ -24,6 +26,9 @@ final class SearchFilterViewModel: ObservableObject {
         }
         animalSizes.forEach {
             queryItems.append(URLQueryItem(name: "animalSizes", value: $0.lowercased()))
+        }
+        if let locationId = selectedLocationId {
+            queryItems.append(URLQueryItem(name: "locationId", value: String(locationId)))
         }
         let endpoint = Endpoint.customWithQuery("posts/search", queryItems)
 
@@ -49,4 +54,20 @@ final class SearchFilterViewModel: ObservableObject {
             animalType = ""
             animalSizes = []
         }
+    
+    func fetchLocations() {
+        CommunicationManager.shared.execute(
+            endpoint: .getAllLocations,
+            responseType: [Location].self
+        ) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let locations):
+                    self.locations = locations
+                case .failure(let error):
+                    self.errorMessage = "Failed to load locations: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }

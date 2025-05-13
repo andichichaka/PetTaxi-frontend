@@ -32,6 +32,7 @@ final class ProfileViewModel: ObservableObject {
                     if let posts = profile.posts{
                         self.userPosts = posts
                     }
+                    print("\(self.userPosts)")
                 case .failure(let error):
                     self.errorMessage = "Failed to fetch profile: \(error.localizedDescription)"
                 }
