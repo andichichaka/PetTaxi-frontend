@@ -24,6 +24,7 @@ enum Endpoint {
     case fetchApprovedRequests
     case approveRequest(Int)
     case disaproveRequest(Int)
+    case getAllLocations
     case custom(String)
 
     private var baseURL: String {
@@ -43,7 +44,7 @@ enum Endpoint {
         case .updatePic:
             return "\(baseURL)/profile/update-profile-pic"
         case .setRole:
-            return "\(baseURL)/profile/set-role"
+            return "\(baseURL)/auth/set-role"
         case .updateProfile:
             return "\(baseURL)/profile/update"
         case .createPost:
@@ -78,6 +79,8 @@ enum Endpoint {
             return "\(baseURL)/bookings/approve/\(id)"
         case .disaproveRequest(let id):
             return "\(baseURL)/bookings/disapprove/\(id)"
+        case .getAllLocations:
+            return "\(baseURL)/posts/fetchLocations"
         case .custom(let customPath):
             return "\(baseURL)/\(customPath)"
         }
@@ -87,7 +90,7 @@ enum Endpoint {
             switch self {
             case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking, .createReview, .refreshToken, .verifyToken:
                 return .POST
-            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews, .fetchPendingRequests, .fetchApprovedRequests:
+            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews, .fetchPendingRequests, .fetchApprovedRequests, .getAllLocations:
                 return .GET
             case .updatePic, .updateProfile, .approveRequest:
                 return .PUT

@@ -10,6 +10,8 @@ final class CreatePostViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var unavailableDates: [[Date]] = []
     @Published var prices: [Double] = []
+    @Published var selectedLocationId: Int? = nil
+    @Published var locations: [Location] = []
 
     @Published var navigateToSetPrices = false
     @Published var navigateToUnavailableDates = false
@@ -33,9 +35,16 @@ final class CreatePostViewModel: ObservableObject {
             completion(false)
             return
         }
+        
+        guard let locationId = selectedLocationId else {
+                    errorMessage = "Please select a location."
+                    completion(false)
+                    return
+                }
 
         let requestBody = CreatePostRequest(
             description: description,
+            location: locationId,
             services: services, animalType: animalType,
             animalSizes: animalSizes
         )
@@ -96,6 +105,20 @@ final class CreatePostViewModel: ObservableObject {
                 self.errorMessage = "Failed to upload one or more images."
             }
             completion(!uploadFailed)
+        }
+    }
+    
+    func fetchLocations() {
+        CommunicationManager.shared.execute(endpoint: .getAllLocations, responseType: [Location].self) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data):
+                    self.locations = data
+                    print("\(self.locations)")
+                case .failure(let error):
+                    print("Failed to fetch locations: \(error)")
+                }
+            }
         }
     }
 }

@@ -6,6 +6,8 @@ class TokenManager {
 
     private let accessTokenKey = "authAccessToken"
     private let refreshTokenKey = "authRefreshToken"
+    
+    private init() {}
 
     // MARK: - Save Tokens
     func saveTokens(accessToken: String, refreshToken: String) {

@@ -36,72 +36,26 @@ struct SearchFilterView: View {
                         .cornerRadius(10)
                         .shadow(radius: 2)
                         
-                        HStack(spacing: 20) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Service Types")
-                                    .font(.custom("Vollkorn-Bold", size: 18))
-                                    .foregroundColor(.color)
-                                ScrollView {
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        ForEach(serviceTypeOptions, id: \.self) { type in
-                                            Toggle(isOn: Binding(
-                                                get: { viewModel.serviceTypes.contains(type) },
-                                                set: { isSelected in
-                                                    if isSelected {
-                                                        viewModel.serviceTypes.append(type)
-                                                    } else {
-                                                        viewModel.serviceTypes.removeAll { $0 == type }
-                                                    }
-                                                }
-                                            )) {
-                                                Text(type)
-                                                    .font(.custom("Vollkorn-Medium", size: 16))
-                                                    .foregroundColor(.color)
-                                            }
-                                            .toggleStyle(CheckboxToggleStyle())
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 10) {
+                        VStack{
+                            HStack(spacing: 20) {
                                 VStack(alignment: .leading, spacing: 10) {
-                                    Text("Animal Type")
-                                        .font(.custom("Vollkorn-Bold", size: 18))
-                                        .foregroundColor(.color)
-                                    Picker("Select type", selection: $viewModel.animalType) {
-                                        Text("Select type").tag("")
-                                            .font(.custom("Vollkorn-Medium", size: 16))
-                                        ForEach(animalTypeOptions, id: \.self) { type in
-                                            Text(type)
-                                                .font(.custom("Vollkorn-Medium", size: 16))
-                                                .tag(type)
-                                        }
-                                    }
-                                    .pickerStyle(MenuPickerStyle())
-                                    .background(Color.white)
-                                    .cornerRadius(10)
-                                    .shadow(radius: 2)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("Animal Sizes")
+                                    Text("Service Types")
                                         .font(.custom("Vollkorn-Bold", size: 18))
                                         .foregroundColor(.color)
                                     ScrollView {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            ForEach(animalSizeOptions, id: \.self) { size in
+                                            ForEach(serviceTypeOptions, id: \.self) { type in
                                                 Toggle(isOn: Binding(
-                                                    get: { viewModel.animalSizes.contains(size) },
+                                                    get: { viewModel.serviceTypes.contains(type) },
                                                     set: { isSelected in
                                                         if isSelected {
-                                                            viewModel.animalSizes.append(size)
+                                                            viewModel.serviceTypes.append(type)
                                                         } else {
-                                                            viewModel.animalSizes.removeAll { $0 == size }
+                                                            viewModel.serviceTypes.removeAll { $0 == type }
                                                         }
                                                     }
                                                 )) {
-                                                    Text(size)
+                                                    Text(type)
                                                         .font(.custom("Vollkorn-Medium", size: 16))
                                                         .foregroundColor(.color)
                                                 }
@@ -110,12 +64,62 @@ struct SearchFilterView: View {
                                         }
                                     }
                                 }
+                                
+                                VStack(alignment: .leading, spacing: 10) {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        Text("Animal Type")
+                                            .font(.custom("Vollkorn-Bold", size: 18))
+                                            .foregroundColor(.color)
+                                        Picker("Select type", selection: $viewModel.animalType) {
+                                            Text("Select type").tag("")
+                                                .font(.custom("Vollkorn-Medium", size: 16))
+                                            ForEach(animalTypeOptions, id: \.self) { type in
+                                                Text(type)
+                                                    .font(.custom("Vollkorn-Medium", size: 16))
+                                                    .tag(type)
+                                            }
+                                        }
+                                        .pickerStyle(MenuPickerStyle())
+                                        .background(Color.white)
+                                        .cornerRadius(10)
+                                        .shadow(radius: 2)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        Text("Animal Sizes")
+                                            .font(.custom("Vollkorn-Bold", size: 18))
+                                            .foregroundColor(.color)
+                                        ScrollView {
+                                            VStack(alignment: .leading, spacing: 10) {
+                                                ForEach(animalSizeOptions, id: \.self) { size in
+                                                    Toggle(isOn: Binding(
+                                                        get: { viewModel.animalSizes.contains(size) },
+                                                        set: { isSelected in
+                                                            if isSelected {
+                                                                viewModel.animalSizes.append(size)
+                                                            } else {
+                                                                viewModel.animalSizes.removeAll { $0 == size }
+                                                            }
+                                                        }
+                                                    )) {
+                                                        Text(size)
+                                                            .font(.custom("Vollkorn-Medium", size: 16))
+                                                            .foregroundColor(.color)
+                                                    }
+                                                    .toggleStyle(CheckboxToggleStyle())
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
+                            locationPicker
                         }
                         .padding()
                         .background(Color.white)
                         .cornerRadius(10)
                         .shadow(radius: 2)
+                        
                         
                         HStack {
                             Button(action: {
@@ -178,6 +182,31 @@ struct SearchFilterView: View {
                 FilteredPostsView(isActive: $navigateToResults, viewModel: viewModel)
             }
         }
+        .onAppear{
+            viewModel.fetchLocations()
+        }
+    }
+    
+    private var locationPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Location")
+                .font(.custom("Vollkorn-Bold", size: 18))
+                .foregroundColor(.color)
+
+            Picker("Select Location", selection: $viewModel.selectedLocationId) {
+                Text("Any Location").tag(nil as Int?)
+                ForEach(viewModel.locations) { location in
+                    Text(location.name).tag(location.id as Int?)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .frame(width: .infinity)
+            .padding(10)
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(radius: 2)
+        }
+        .padding(.leading, -125)
     }
 }
 

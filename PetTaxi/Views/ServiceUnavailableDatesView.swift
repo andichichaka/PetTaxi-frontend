@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ServiceUnavailableDatesView: View {
     @ObservedObject var viewModel: CreatePostViewModel
-    @State private var selectedDates: Set<Date> = []
+    @State private var selectedDates: [Int: Set<Date>] = [:]
     @State private var currentServiceIndex: Int = 0
     @State private var errorMessage: String?
     @Binding var isActive: Bool
@@ -29,7 +29,10 @@ struct ServiceUnavailableDatesView: View {
                     .padding(.horizontal)
 
                 CalendarView(
-                    selectedDates: $selectedDates,
+                    selectedDates: Binding(
+                        get: { selectedDates[currentServiceIndex] ?? [] },
+                        set: { selectedDates[currentServiceIndex] = $0 }
+                    ),
                     unavailableDates: loadUnavailableDatesForCurrentService(),
                     serviceType: viewModel.services[currentServiceIndex].serviceType
                 )
@@ -45,9 +48,7 @@ struct ServiceUnavailableDatesView: View {
                 HStack {
                     if currentServiceIndex > 0 {
                         Button("Back") {
-                            saveDatesForCurrentService()
                             currentServiceIndex -= 1
-                            loadDatesForCurrentService()
                         }
                         .font(.custom("Vollkorn-Bold", size: 16))
                         .padding()
@@ -60,16 +61,10 @@ struct ServiceUnavailableDatesView: View {
                     Spacer()
 
                     Button(currentServiceIndex == viewModel.services.count - 1 ? "Submit" : "Next") {
-                        if validateDates() {
-                            saveDatesForCurrentService()
-                            if currentServiceIndex < viewModel.services.count - 1 {
-                                currentServiceIndex += 1
-                                loadDatesForCurrentService()
-                            } else {
-                                submitPost()
-                            }
+                        if currentServiceIndex < viewModel.services.count - 1 {
+                            currentServiceIndex += 1
                         } else {
-                            errorMessage = "Please select at least one unavailable date."
+                            submitPost()
                         }
                     }
                     .font(.custom("Vollkorn-Bold", size: 16))
@@ -83,42 +78,33 @@ struct ServiceUnavailableDatesView: View {
             }
         }
         .onAppear {
-            loadDatesForCurrentService()
+            loadAllDates()
         }
     }
 
     // MARK: - Helper Methods
 
-    private func validateDates() -> Bool {
-        return !selectedDates.isEmpty
-    }
-
-    private func saveDatesForCurrentService() {
-        let unavailableDates = selectedDates.map { date -> String in
-            let formatter = ISO8601DateFormatter()
-            return formatter.string(from: date)
-        }
-        viewModel.services[currentServiceIndex].unavailableDates = unavailableDates
-    }
-
-    private func loadDatesForCurrentService() {
+    private func loadAllDates() {
         let formatter = ISO8601DateFormatter()
-        if let dates = viewModel.services[currentServiceIndex].unavailableDates {
-            selectedDates = Set(dates.compactMap { formatter.date(from: $0) })
-        } else {
-            selectedDates = []
+        for (index, service) in viewModel.services.enumerated() {
+            selectedDates[index] = Set(service.unavailableDates?.compactMap { formatter.date(from: $0) } ?? [])
         }
     }
 
     private func loadUnavailableDatesForCurrentService() -> [Date] {
         let formatter = ISO8601DateFormatter()
-        if let unavailableDates = viewModel.services[currentServiceIndex].unavailableDates {
-            return unavailableDates.compactMap { formatter.date(from: $0) }
-        }
-        return []
+        return viewModel.services[currentServiceIndex].unavailableDates?.compactMap { formatter.date(from: $0) } ?? []
     }
 
     private func submitPost() {
+        let formatter = ISO8601DateFormatter()
+
+        // Save all unavailable dates for each service on submit
+        for (index, dates) in selectedDates {
+            let formattedDates = dates.map { formatter.string(from: $0) }
+            viewModel.services[index].unavailableDates = formattedDates
+        }
+
         viewModel.createPost { success in
             if success {
                 viewModel.navigateToUnavailableDates = false
