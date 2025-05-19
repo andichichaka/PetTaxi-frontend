@@ -58,7 +58,7 @@ final class LogInViewModel: ObservableObject {
                     if response.success, let access_token = response.access_token, let refresh_token = response.refresh_token, let role = response.user?.role {
                         UserDefaults.standard.set(role, forKey: "userRole")
                         TokenManager.shared.saveTokens(accessToken: access_token, refreshToken: refresh_token)
-                        print("\(refresh_token)")
+                        //print("\(refresh_token)")
                         completion(true)
                     } else {
                         self.errorMessage = response.message ?? "Login failed."

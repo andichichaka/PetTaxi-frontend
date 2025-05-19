@@ -4,7 +4,7 @@ import Combine
 struct PostDetailView: View {
     let post: Post
     @ObservedObject var viewModel: BookingViewModel =  BookingViewModel(animalType: "")
-    @StateObject var reviewViewModel: PostDetailViewModel = PostDetailViewModel(post: Post(id: -1, description: "", animalType: "", animalSizes: [], user: User(id: -1, access_token: "", refresh_token: "", email: "", username: "", role: "", description: "", profilePic: "", isEmailVerified: false ), services: [], reviews: []))
+    @StateObject var reviewViewModel: PostDetailViewModel = PostDetailViewModel(post: Post(id: -1, imagesUrl: [], description: "", animalType: "", animalSizes: [], user: User(id: -1, access_token: "", refresh_token: "", email: "", username: "", role: "", description: "", profilePic: "", isEmailVerified: false ), location: nil, services: [], reviews: []))
     @State private var isWritingReview: Bool = false
 
     var body: some View {
@@ -96,6 +96,16 @@ struct PostDetailView: View {
                     .foregroundColor(.black)
 
                 Spacer()
+                if let location = post.location?.name {
+                    HStack {
+                        Image(systemName: "mappin.and.ellipse")
+                            .foregroundColor(.color3)
+                        Text(location)
+                            .font(.custom("Vollkorn-Medium", size: 16))
+                            .foregroundColor(.color3)
+                    }
+                    .padding(.top, -8)
+                }
 
                 Text(post.animalType.capitalized)
                     .font(.custom("Vollkorn-Medium", size: 16))

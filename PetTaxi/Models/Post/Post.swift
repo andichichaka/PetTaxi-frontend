@@ -5,6 +5,7 @@ struct Post: Identifiable, Codable {
     var animalType: String
     var animalSizes: [String]
     let user: User?
+    var location: Location?
     var services: [Service]
     var reviews: [Review]?
 }

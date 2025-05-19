@@ -37,11 +37,22 @@ struct PostView: View {
                             
                             Spacer()
                             
-                            Text(post.animalType.capitalized)
-                                .font(.custom("Vollkorn-Medium", size: 14))
-                                .padding(6)
-                                .background(Color.color3.opacity(0.3))
-                                .cornerRadius(10)
+                            VStack(alignment: .trailing, spacing: 4) {
+                                    if let location = post.location?.name {
+                                        Text(location)
+                                            .font(.custom("Vollkorn-Medium", size: 14))
+                                            .foregroundColor(.color3)
+                                            .padding(4)
+                                            .background(Color.color3.opacity(0.15))
+                                            .cornerRadius(6)
+                                    }
+
+                                    Text(post.animalType.capitalized)
+                                        .font(.custom("Vollkorn-Medium", size: 14))
+                                        .padding(6)
+                                        .background(Color.color3.opacity(0.3))
+                                        .cornerRadius(10)
+                                }
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
