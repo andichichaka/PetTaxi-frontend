@@ -10,73 +10,100 @@ struct MultiServiceCalendarView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.color3.opacity(0.4), Color.color2.opacity(0.2)]),
+                gradient: Gradient(colors: [
+                    AppStyle.Colors.accent.opacity(0.4),
+                    AppStyle.Colors.secondary.opacity(0.2)
+                ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
             .edgesIgnoringSafeArea(.all)
 
-            VStack {
-                Text("Select Dates for \(services[currentServiceIndex].serviceType.capitalized)")
-                    .font(.custom("Vollkorn-Bold", size: 24))
-                    .foregroundColor(.color)
-                    .padding(.top, 20)
-                    .padding(.horizontal)
-
-                CalendarView(
-                    selectedDates: Binding(
-                        get: { viewModel.bookingDates[services[currentServiceIndex].id!] ?? [] },
-                        set: { viewModel.bookingDates[services[currentServiceIndex].id!] = $0 }
-                    ),
-                    unavailableDates: unavailableDates,
-                    serviceType: services[currentServiceIndex].serviceType
-                )
-                .padding()
-
-                HStack {
-                    if currentServiceIndex > 0 {
-                        Button("Back") {
-                            currentServiceIndex -= 1
-                        }
-                        .font(.custom("Vollkorn-Bold", size: 16))
-                        .padding()
-                        .background(Color.color2.opacity(0.3))
-                        .foregroundColor(.color)
-                        .cornerRadius(10)
-                        .shadow(radius: 2)
-                    }
-
-                    Spacer()
-
-                    if currentServiceIndex < services.count - 1 {
-                        Button("Next") {
-                            currentServiceIndex += 1
-                        }
-                        .font(.custom("Vollkorn-Bold", size: 16))
-                        .padding()
-                        .background(Color.color3)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .shadow(radius: 2)
-                    } else {
-                        Button(action: {
-                            viewModel.isNotedActive = true
-                        }) {
-                            Text("Next")
-                                .font(.custom("Vollkorn-Bold", size: 16))
-                                .padding()
-                                .background(Color.color3)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                                .shadow(radius: 2)
-                        }
-                    }
-                }
-                .padding()
+            VStack(spacing: 20) {
+                headerText
+                calendar
+                navigationButtons
             }
         }
         .navigationDestination(isPresented: $viewModel.isNotedActive) {
             AddNotesView(viewModel: viewModel)
+        }
+    }
+
+    // MARK: - Subviews
+
+    private var headerText: some View {
+        Text("Select Dates for \(services[currentServiceIndex].serviceType.capitalized)")
+            .font(AppStyle.Fonts.vollkornBold(24))
+            .foregroundColor(AppStyle.Colors.base)
+            .padding(.top, 20)
+            .padding(.horizontal)
+    }
+
+    private var calendar: some View {
+        CalendarView(
+            selectedDates: Binding(
+                get: { viewModel.bookingDates[services[currentServiceIndex].id!] ?? [] },
+                set: { viewModel.bookingDates[services[currentServiceIndex].id!] = $0 }
+            ),
+            unavailableDates: unavailableDates,
+            serviceType: services[currentServiceIndex].serviceType
+        )
+        .padding()
+    }
+
+    private var navigationButtons: some View {
+        HStack {
+            if currentServiceIndex > 0 {
+                backButton
+            }
+
+            Spacer()
+
+            if currentServiceIndex < services.count - 1 {
+                nextButton
+            } else {
+                continueToNotesButton
+            }
+        }
+        .padding()
+    }
+
+    private var backButton: some View {
+        Button("Back") {
+            currentServiceIndex -= 1
+        }
+        .font(AppStyle.Fonts.vollkornBold(16))
+        .padding()
+        .background(AppStyle.Colors.secondary.opacity(0.3))
+        .foregroundColor(AppStyle.Colors.base)
+        .cornerRadius(10)
+        .shadow(radius: 2)
+    }
+
+    private var nextButton: some View {
+        Button("Next") {
+            currentServiceIndex += 1
+        }
+        .font(AppStyle.Fonts.vollkornBold(16))
+        .padding()
+        .background(AppStyle.Colors.accent)
+        .foregroundColor(.white)
+        .cornerRadius(10)
+        .shadow(radius: 2)
+    }
+
+    private var continueToNotesButton: some View {
+        Button {
+            viewModel.isNotedActive = true
+        } label: {
+            Text("Next")
+                .font(AppStyle.Fonts.vollkornBold(16))
+                .padding()
+                .background(AppStyle.Colors.accent)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 2)
         }
     }
 }

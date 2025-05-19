@@ -8,68 +8,85 @@ struct RoleSelectionDialog: View {
 
     var body: some View {
         ZStack {
-            Color(.black)
-                .opacity(0.5)
-                .onTapGesture {
-                }
+            Color.black.opacity(0.5)
+                .onTapGesture { }
 
             VStack(spacing: 20) {
-                Text("Choose Your Role")
-                    .font(.custom("Vollkorn-Bold", size: 25))
-                    .bold()
-                    .padding(.top)
-                    .padding(.bottom, -5)
-
-                Text("Select how you'll be using our platform")
-                    .font(.custom("Vollkorn-Medium", size: 17))
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom)
-
-                VStack(spacing: 16) {
-                    Button(action: {
-                        submitRole("admin")
-                        UserDefaults.standard.set("admin", forKey: "userRole")
-                    }) {
-                        RoleOptionView(
-                            title: "Caretaker",
-                            subtitle: "I want to provide pet care services",
-                            icon: "heart.fill"
-                        )
-                    }
-
-                    Button(action: {
-                        submitRole("user")
-                        UserDefaults.standard.set("user", forKey: "userRole")
-                    }) {
-                        RoleOptionView(
-                            title: "Regular User",
-                            subtitle: "I am looking for pet care services",
-                            icon: "person.fill"
-                        )
-                    }
-                }
-
+                header
+                subheader
+                roleOptions
                 if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .font(.footnote)
-                        .padding(.top)
+                    errorMessageView(errorMessage)
                 }
-
                 if isSubmitting {
-                    ProgressView("Submitting...")
-                        .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
-                        .padding()
+                    loadingView
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(AppStyle.Colors.light)
             .cornerRadius(20)
             .shadow(radius: 20)
             .padding(30)
         }
         .ignoresSafeArea()
     }
+
+    // MARK: - UI Components
+
+    private var header: some View {
+        Text("Choose Your Role")
+            .font(AppStyle.Fonts.vollkornBold(25))
+            .padding(.top)
+            .padding(.bottom, -5)
+    }
+
+    private var subheader: some View {
+        Text("Select how you'll be using our platform")
+            .font(AppStyle.Fonts.vollkornMedium(17))
+            .multilineTextAlignment(.center)
+            .padding(.bottom)
+    }
+
+    private var roleOptions: some View {
+        VStack(spacing: 16) {
+            Button {
+                submitRole("admin")
+                UserDefaults.standard.set("admin", forKey: "userRole")
+            } label: {
+                RoleOptionView(
+                    title: "Caretaker",
+                    subtitle: "I want to provide pet care services",
+                    icon: "heart.fill"
+                )
+            }
+
+            Button {
+                submitRole("user")
+                UserDefaults.standard.set("user", forKey: "userRole")
+            } label: {
+                RoleOptionView(
+                    title: "Regular User",
+                    subtitle: "I am looking for pet care services",
+                    icon: "person.fill"
+                )
+            }
+        }
+    }
+
+    private func errorMessageView(_ message: String) -> some View {
+        Text(message)
+            .foregroundColor(.red)
+            .font(.footnote)
+            .padding(.top)
+    }
+
+    private var loadingView: some View {
+        ProgressView("Submitting...")
+            .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
+            .padding()
+    }
+
+    // MARK: - Actions
 
     private func submitRole(_ role: String) {
         isSubmitting = true
@@ -79,7 +96,6 @@ struct RoleSelectionDialog: View {
             DispatchQueue.main.async {
                 isSubmitting = false
                 if success {
-                    isSubmitting = false
                     close()
                 } else {
                     errorMessage = viewModel.errorMessage
@@ -102,17 +118,16 @@ struct RoleOptionView: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 24))
-                .foregroundColor(Color.color3)
+                .foregroundColor(AppStyle.Colors.accent)
                 .frame(width: 50, height: 50)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.custom("Vollkorn-Bold", size: 20))
-                    .multilineTextAlignment(.center)
+                    .font(AppStyle.Fonts.vollkornBold(20))
                     .foregroundColor(.primary)
                 Text(subtitle)
-                    .font(.custom("Vollkorn-Medium", size: 13))
-                    .foregroundColor(Color.color3)
+                    .font(AppStyle.Fonts.vollkornMedium(13))
+                    .foregroundColor(AppStyle.Colors.accent)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,6 +138,6 @@ struct RoleOptionView: View {
     }
 }
 
-#Preview{
+#Preview {
     RoleSelectionDialog(isActive: .constant(true))
 }

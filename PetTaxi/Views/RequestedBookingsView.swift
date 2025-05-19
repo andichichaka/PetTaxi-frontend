@@ -8,31 +8,37 @@ struct RequestedBookingsView: View {
         NavigationStack {
             ZStack {
                 LiveBlurryBackground()
-                
-                if viewModel.isLoading {
-                    ProgressView("Loading...")
-                        .font(.custom("Vollkorn-Bold", size: 18))
-                        .foregroundColor(.color)
-                } else if viewModel.bookings.isEmpty {
-                    Text(roleManager.userRole == "admin" ? "No requested bookings." : "No approved bookings.")
-                        .font(.custom("Vollkorn-Medium", size: 16))
-                        .foregroundColor(.gray)
-                        .padding()
-                } else {
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            ForEach(viewModel.bookings, id: \.id) { booking in
-                                BookingRequestCard(booking: booking, viewModel: viewModel)
-                            }
-                        }
-                        .padding()
-                    }
-                }
+
+                content
             }
             .navigationTitle("Requested Bookings")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 viewModel.fetchBookings()
+            }
+        }
+    }
+
+    private var content: some View {
+        Group {
+            if viewModel.isLoading {
+                ProgressView("Loading...")
+                    .font(AppStyle.Fonts.vollkornBold(18))
+                    .foregroundColor(AppStyle.Colors.base)
+            } else if viewModel.bookings.isEmpty {
+                Text(roleManager.userRole == "admin" ? "No requested bookings." : "No approved bookings.")
+                    .font(AppStyle.Fonts.vollkornMedium(16))
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(viewModel.bookings, id: \.id) { booking in
+                            BookingRequestCard(booking: booking, viewModel: viewModel)
+                        }
+                    }
+                    .padding()
+                }
             }
         }
     }
@@ -45,96 +51,115 @@ struct BookingRequestCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                if let profilePicture = booking.user.profilePic {
-                    AsyncImage(url: URL(string: profilePicture)) { image in
+            userHeader
+            Divider()
+            bookingInfo
+            Divider()
+            postPreview
+            if roleManager.userRole == "admin" {
+                adminActions
+            }
+        }
+        .padding()
+        .background(AppStyle.Colors.light.opacity(0.8))
+        .cornerRadius(10)
+        .shadow(radius: 5)
+    }
+
+    private var userHeader: some View {
+        HStack {
+            if let profilePicture = booking.user.profilePic,
+               let url = URL(string: profilePicture) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
                         image.resizable()
-                    } placeholder: {
+                    default:
                         Image(systemName: "person.crop.circle.fill")
                             .resizable()
                             .foregroundColor(.gray)
                     }
-                    .frame(width: 50, height: 50)
-                    .clipShape(Circle())
                 }
-                
-                Text(booking.user.username)
-                    .font(.custom("Vollkorn-Bold", size: 18))
-                    .foregroundColor(.black)
-                
-                Spacer()
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
             }
-            
-            Divider()
-            
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Service: \(booking.service.serviceType.capitalized)")
-                Text("Animal: \(booking.animalType) (\(booking.animalSize))")
-                Text("Dates: \(booking.bookingDates.joined(separator: ", "))")
-                Text("Price: $\(booking.price, specifier: "%.2f")")
-                Text("Notes: \(booking.notes)")
-            }
-            .font(.custom("Vollkorn-Regular", size: 16))
-            .foregroundColor(.black)
-            
-            Divider()
-            
-            HStack {
-                if let postImageURL = booking.service.post?.imagesUrl?.first,
-                   let postId = booking.service.post?.id {
-                    NavigationLink(destination: PostDetailView(post: booking.service.post!)) {
-                        AsyncImage(url: URL(string: postImageURL)) { image in
+
+            Text(booking.user.username)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(.black)
+
+            Spacer()
+        }
+    }
+
+    private var bookingInfo: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Service: \(booking.service.serviceType.capitalized)")
+            Text("Animal: \(booking.animalType) (\(booking.animalSize))")
+            Text("Dates: \(booking.bookingDates.joined(separator: ", "))")
+            Text("Price: $\(booking.price, specifier: "%.2f")")
+            Text("Notes: \(booking.notes)")
+        }
+        .font(AppStyle.Fonts.vollkornRegular(16))
+        .foregroundColor(.black)
+    }
+
+    private var postPreview: some View {
+        HStack {
+            if let imageURL = booking.service.post?.imagesUrl?.first,
+               let url = URL(string: imageURL),
+               let post = booking.service.post {
+                NavigationLink(destination: PostDetailView(post: post)) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
                             image.resizable()
-                        } placeholder: {
+                        default:
                             Image(systemName: "photo")
                                 .resizable()
                                 .foregroundColor(.gray)
                         }
-                        .frame(width: 60, height: 60)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
+                    .frame(width: 60, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
-                
-                Text("Post: \(booking.service.post?.description ?? "Unknown")")
-                    .font(.custom("Vollkorn-Medium", size: 14))
-                    .foregroundColor(.black)
-                
-                Spacer()
             }
-            
-            if roleManager.userRole == "admin" {
-                HStack {
-                    Button(action: {
-                        viewModel.approveBooking(booking.id)
-                    }) {
-                        Text("Approve")
-                            .font(.custom("Vollkorn-Bold", size: 16))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
-                    }
-                                
-                    Button(action: {
-                        viewModel.disapproveBooking(booking.id)
-                    }) {
-                        Text("Disapprove")
-                            .font(.custom("Vollkorn-Bold", size: 16))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
-                    }
-                }
+
+            Text("Post: \(booking.service.post?.description ?? "Unknown")")
+                .font(AppStyle.Fonts.vollkornMedium(14))
+                .foregroundColor(.black)
+
+            Spacer()
+        }
+    }
+
+    private var adminActions: some View {
+        HStack(spacing: 10) {
+            Button(action: {
+                viewModel.approveBooking(booking.id)
+            }) {
+                Text("Approve")
+                    .font(AppStyle.Fonts.vollkornBold(16))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 3)
+            }
+
+            Button(action: {
+                viewModel.disapproveBooking(booking.id)
+            }) {
+                Text("Disapprove")
+                    .font(AppStyle.Fonts.vollkornBold(16))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 3)
             }
         }
-        .padding()
-        .background(Color.white.opacity(0.8))
-        .cornerRadius(10)
-        .shadow(radius: 5)
     }
 }

@@ -12,14 +12,10 @@ struct FilteredPostsView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        Spacer()
-                            .frame(height: 120)
+                        Spacer().frame(height: 120)
 
                         if viewModel.filteredPosts.isEmpty {
-                            Text("No posts match your filters.")
-                                .font(.custom("Vollkorn-Medium", size: 18))
-                                .foregroundColor(.white)
-                                .padding()
+                            noResultsText
                         } else {
                             ForEach(viewModel.filteredPosts) { post in
                                 PostView(post: post)
@@ -29,35 +25,46 @@ struct FilteredPostsView: View {
                     .padding(.vertical)
                 }
 
-                VStack {
-                    HStack {
-                        Button(action: {
-                            isActive = false
-                        }) {
-                            Image(systemName: "arrow.backward")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .padding(.trailing, 8)
-                        }
-
-                        Text("Search Results")
-                            .font(.custom("LilitaOne", size: 28))
-                            .foregroundColor(.white)
-
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 12)
-                    .background(Color.black.opacity(0.7))
-                    .cornerRadius(15)
-                    .padding(.horizontal)
-                    .padding(.top, 5)
-                    .zIndex(1)
-
-                    Spacer()
-                }
+                topBar
             }
         }
+    }
+
+    // MARK: - Subviews
+
+    private var topBar: some View {
+        VStack {
+            HStack {
+                Button(action: { isActive = false }) {
+                    Image(systemName: "arrow.backward")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .padding(.trailing, 8)
+                }
+
+                Text("Search Results")
+                    .font(AppStyle.Fonts.lilita(28))
+                    .foregroundColor(.white)
+
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .background(Color.black.opacity(0.7))
+            .cornerRadius(15)
+            .padding(.horizontal)
+            .padding(.top, 5)
+            .zIndex(1)
+
+            Spacer()
+        }
+    }
+
+    private var noResultsText: some View {
+        Text("No posts match your filters.")
+            .font(AppStyle.Fonts.vollkornMedium(18))
+            .foregroundColor(.white)
+            .padding()
     }
 }
 

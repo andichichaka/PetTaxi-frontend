@@ -6,21 +6,17 @@ struct CreatePostView: View {
     @State private var selectedItems = [PhotosPickerItem]()
     @State private var selectedImages = [UIImage]()
     @State private var description: String = ""
-    @State private var serviceTypes: [String] = []
-    @State private var animalSizes: [String] = []
-    @State private var animalType: String = "Dog"
+    @State private var serviceTypes: [ServiceType] = []
+    @State private var animalSizes: [AnimalSize] = []
+    @State private var animalType: AnimalType = .dog
     @State private var errorMessage: String?
     @StateObject private var viewModel = CreatePostViewModel()
-
-    private let serviceTypeOptions = ["Daily Walking", "Weekly Walking", "Daily Sitting", "Weekly Sitting", "Other"]
-    private let animalSizeOptions = ["Mini (0-5kg)", "Small (5-10kg)", "Medium (10-15kg)", "Large (15-25kg)", "Other"]
-    private let animalTypeOptions = ["Dog", "Cat", "Both"]
 
     var body: some View {
         NavigationStack {
             ZStack {
                 LinearGradient(
-                    gradient: Gradient(colors: [Color.color2.opacity(0.2), Color.white]),
+                    gradient: Gradient(colors: [AppStyle.Colors.secondary.opacity(0.2), .white]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -29,31 +25,24 @@ struct CreatePostView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         Text("Create New Post")
-                            .font(.custom("Vollkorn-Bold", size: 28))
-                            .foregroundColor(.color)
+                            .font(AppStyle.Fonts.vollkornBold(28))
+                            .foregroundColor(AppStyle.Colors.base)
                             .padding(.top, 20)
 
                         descriptionField
-                        
                         locationPicker
-
                         animalTypePicker
-
                         serviceTypeSelection
-
                         animalSizeSelection
-
                         uploadPhotoSection
 
-                        nextButton
-
-                        if let errorMessage = errorMessage {
+                        if let errorMessage {
                             Text(errorMessage)
-                                .font(.custom("Vollkorn-Medium", size: 14))
+                                .font(AppStyle.Fonts.vollkornMedium(14))
                                 .foregroundColor(.red)
-                                .padding(.horizontal)
                         }
 
+                        nextButton
                         closeButton
                     }
                     .padding()
@@ -73,11 +62,11 @@ struct CreatePostView: View {
     private var descriptionField: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
             TextEditor(text: $description)
-                .font(.custom("Vollkorn-Regular", size: 16))
+                .font(AppStyle.Fonts.vollkornRegular(16))
                 .frame(minHeight: 100)
                 .padding()
                 .background(Color.white)
@@ -85,37 +74,37 @@ struct CreatePostView: View {
                 .shadow(radius: 2)
         }
     }
-    
-    private var locationPicker: some View {
-        VStack(alignment: .leading) {
-            Text("Select Location")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
 
-            Picker("Location", selection: $viewModel.selectedLocationId) {
-                ForEach(viewModel.locations) { location in
-                    Text(location.name).tag(location.id as Int?)
-                }
-            }
-            .pickerStyle(MenuPickerStyle())
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.white)
-            .cornerRadius(10)
-            .shadow(radius: 2)
-        }
-    }
+    private var locationPicker: some View {
+          VStack(alignment: .leading) {
+              Text("Select Location")
+                  .font(AppStyle.Fonts.vollkornBold(18))
+                  .foregroundColor(AppStyle.Colors.base)
+
+              Picker("Location", selection: $viewModel.selectedLocationId) {
+                  ForEach(viewModel.locations) { location in
+                      Text(location.name).tag(location.id as Int?)
+                  }
+              }
+              .pickerStyle(MenuPickerStyle())
+              .frame(maxWidth: .infinity)
+              .padding()
+              .background(.white)
+              .cornerRadius(10)
+              .shadow(radius: 2)
+          }
+      }
 
     private var animalTypePicker: some View {
         VStack(alignment: .leading) {
             Text("Animal Type")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
             Picker("Select Animal Type", selection: $animalType) {
-                ForEach(animalTypeOptions, id: \.self) { type in
-                    Text(type)
-                        .font(.custom("Vollkorn-Medium", size: 16))
+                ForEach(AnimalType.allCases) { type in
+                    Text(type.rawValue)
+                        .font(AppStyle.Fonts.vollkornMedium(16))
                         .tag(type)
                 }
             }
@@ -129,27 +118,22 @@ struct CreatePostView: View {
     private var serviceTypeSelection: some View {
         VStack(alignment: .leading) {
             Text("Service Types")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(serviceTypeOptions, id: \.self) { type in
-                    Button(action: {
-                        if serviceTypes.contains(type) {
-                            serviceTypes.removeAll { $0 == type }
-                        } else {
-                            serviceTypes.append(type)
+                ForEach(ServiceType.allCases) { service in
+                    ToggleButton(
+                        label: service.rawValue,
+                        isSelected: serviceTypes.contains(service),
+                        onTap: {
+                            if serviceTypes.contains(service) {
+                                serviceTypes.removeAll { $0 == service }
+                            } else {
+                                serviceTypes.append(service)
+                            }
                         }
-                    }) {
-                        Text(type)
-                            .font(.custom("Vollkorn-Medium", size: 16))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(serviceTypes.contains(type) ? Color.color3 : Color.color2.opacity(0.3))
-                            .foregroundColor(serviceTypes.contains(type) ? .white : .color)
-                            .cornerRadius(10)
-                            .shadow(radius: 2)
-                    }
+                    )
                 }
             }
         }
@@ -158,27 +142,22 @@ struct CreatePostView: View {
     private var animalSizeSelection: some View {
         VStack(alignment: .leading) {
             Text("Animal Sizes")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(animalSizeOptions, id: \.self) { size in
-                    Button(action: {
-                        if animalSizes.contains(size) {
-                            animalSizes.removeAll { $0 == size }
-                        } else {
-                            animalSizes.append(size)
+                ForEach(AnimalSize.allCases) { size in
+                    ToggleButton(
+                        label: size.rawValue,
+                        isSelected: animalSizes.contains(size),
+                        onTap: {
+                            if animalSizes.contains(size) {
+                                animalSizes.removeAll { $0 == size }
+                            } else {
+                                animalSizes.append(size)
+                            }
                         }
-                    }) {
-                        Text(size)
-                            .font(.custom("Vollkorn-Medium", size: 16))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(animalSizes.contains(size) ? Color.color3 : Color.color2.opacity(0.3))
-                            .foregroundColor(animalSizes.contains(size) ? .white : .color)
-                            .cornerRadius(10)
-                            .shadow(radius: 2)
-                    }
+                    )
                 }
             }
         }
@@ -187,13 +166,13 @@ struct CreatePostView: View {
     private var uploadPhotoSection: some View {
         VStack(alignment: .leading) {
             Text("Upload Photos")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 10) {
-                    ForEach(0..<selectedImages.count, id: \.self) { index in
-                        Image(uiImage: selectedImages[index])
+                    ForEach(selectedImages, id: \.self) { image in
+                        Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
                             .frame(width: 150, height: 150)
@@ -207,10 +186,11 @@ struct CreatePostView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 40, height: 40)
-                                .foregroundColor(.color)
+                                .foregroundColor(AppStyle.Colors.base)
+
                             Text("Upload")
-                                .font(.custom("Vollkorn-Medium", size: 14))
-                                .foregroundColor(.color)
+                                .font(AppStyle.Fonts.vollkornMedium(14))
+                                .foregroundColor(AppStyle.Colors.base)
                         }
                         .frame(width: 150, height: 150)
                         .background(Color.white)
@@ -222,8 +202,8 @@ struct CreatePostView: View {
                             selectedImages.removeAll()
                             for item in selectedItems {
                                 if let data = try? await item.loadTransferable(type: Data.self),
-                                   let uiImage = UIImage(data: data) {
-                                    selectedImages.append(uiImage)
+                                   let image = UIImage(data: data) {
+                                    selectedImages.append(image)
                                 }
                             }
                             viewModel.selectedImages = selectedImages
@@ -235,29 +215,24 @@ struct CreatePostView: View {
     }
 
     private var nextButton: some View {
-        Button(action: {
+        Button {
             if validateForm() {
                 viewModel.description = description
-                viewModel.animalType = animalType.lowercased()
-                viewModel.animalSizes = animalSizes.map { $0.lowercased() }
-
-                viewModel.services = serviceTypes.map { serviceType in
-                    CreateServiceRequest(serviceType: serviceType.lowercased(), price: 0.0, unavailableDates: [])
+                viewModel.animalType = animalType.rawValue.lowercased()
+                viewModel.animalSizes = animalSizes.map { $0.rawValue.lowercased() }
+                viewModel.services = serviceTypes.map {
+                    CreateServiceRequest(serviceType: $0.rawValue.lowercased(), price: 0.0, unavailableDates: [])
                 }
-
-                print("Form Validated. Navigating to SetPricesView.")
                 viewModel.navigateToSetPrices = true
-                print("\(viewModel.navigateToSetPrices)")
             } else {
                 errorMessage = "Please fill in all required fields"
-                print("Form Validation Failed.")
             }
-        }) {
+        } label: {
             Text("Next")
-                .font(.custom("Vollkorn-Bold", size: 18))
+                .font(AppStyle.Fonts.vollkornBold(18))
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.color3)
+                .background(AppStyle.Colors.accent)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .shadow(radius: 5)
@@ -265,29 +240,46 @@ struct CreatePostView: View {
     }
 
     private var closeButton: some View {
-        Button(action: {
+        Button {
             isActive = false
-        }) {
+        } label: {
             Text("Close")
-                .font(.custom("Vollkorn-Bold", size: 18))
+                .font(AppStyle.Fonts.vollkornBold(18))
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.color)
+                .background(AppStyle.Colors.base)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .shadow(radius: 5)
         }
     }
 
-    // MARK: - Helper Methods
-
     private func validateForm() -> Bool {
-        return !description.isEmpty &&
-            !serviceTypes.isEmpty &&
-            !animalSizes.isEmpty &&
-            viewModel.selectedLocationId != nil
+        !description.isEmpty &&
+        !serviceTypes.isEmpty &&
+        !animalSizes.isEmpty &&
+        viewModel.selectedLocationId != nil
     }
+}
 
+// MARK: - Mini reusable toggle view
+
+private struct ToggleButton: View {
+    let label: String
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Text(label)
+            .font(AppStyle.Fonts.vollkornMedium(16))
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(isSelected ? AppStyle.Colors.accent : AppStyle.Colors.secondary.opacity(0.3))
+            .foregroundColor(isSelected ? .white : AppStyle.Colors.base)
+            .cornerRadius(10)
+            .shadow(radius: 2)
+            .onTapGesture(perform: onTap)
+    }
 }
 
 #Preview {
