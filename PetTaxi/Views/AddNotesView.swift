@@ -7,66 +7,88 @@ struct AddNotesView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [Color.color3.opacity(0.4), Color.color2.opacity(0.2)]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .edgesIgnoringSafeArea(.all)
+            gradientBackground
 
             VStack(spacing: 20) {
-                Text("Add Notes")
-                    .font(.custom("Vollkorn-Bold", size: 28))
-                    .foregroundColor(.color)
-                    .padding(.top, 20)
-
-                VStack(alignment: .leading) {
-                    Text("Notes for the service provider")
-                        .font(.custom("Vollkorn-Medium", size: 16))
-                        .foregroundColor(.gray)
-
-                    TextEditor(text: $viewModel.notes)
-                        .font(.custom("Vollkorn-Regular", size: 16))
-                        .frame(height: 150)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(10)
-                        .shadow(radius: 2)
-                }
-                .padding(.horizontal)
-
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .font(.custom("Vollkorn-Medium", size: 14))
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
-                }
-
+                title
+                notesEditorSection
+                errorMessageView
                 Spacer()
-
-                Button(action: submitBooking) {
-                    if isSubmitting {
-                        ProgressView()
-                            .padding()
-                    } else {
-                        Text("Submit Booking")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.color3)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 2)
-                    }
-                }
-                .disabled(isSubmitting)
-                .padding(.horizontal)
+                submitButton
             }
             .padding()
         }
         .navigationTitle("Add Notes")
         .navigationBarTitleDisplayMode(.inline)
     }
+
+    // MARK: - Subviews
+
+    private var gradientBackground: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [AppStyle.Colors.accent.opacity(0.4), AppStyle.Colors.secondary.opacity(0.2)]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+
+    private var title: some View {
+        Text("Add Notes")
+            .font(AppStyle.Fonts.vollkornBold(28))
+            .foregroundColor(AppStyle.Colors.base)
+            .padding(.top, 20)
+    }
+
+    private var notesEditorSection: some View {
+        VStack(alignment: .leading) {
+            Text("Notes for the service provider")
+                .font(AppStyle.Fonts.vollkornMedium(16))
+                .foregroundColor(.gray)
+
+            TextEditor(text: $viewModel.notes)
+                .font(AppStyle.Fonts.vollkornRegular(16))
+                .frame(height: 150)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+        }
+        .padding(.horizontal)
+    }
+
+    private var errorMessageView: some View {
+        Group {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+                    .font(AppStyle.Fonts.vollkornMedium(14))
+                    .foregroundColor(.red)
+                    .padding(.horizontal)
+            }
+        }
+    }
+
+    private var submitButton: some View {
+        Button(action: submitBooking) {
+            if isSubmitting {
+                ProgressView()
+                    .padding()
+            } else {
+                Text("Submit Booking")
+                    .font(AppStyle.Fonts.vollkornBold(18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppStyle.Colors.accent)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 2)
+            }
+        }
+        .disabled(isSubmitting)
+        .padding(.horizontal)
+    }
+
+    // MARK: - Logic
 
     private func submitBooking() {
         guard !viewModel.selectedServiceIds.isEmpty else {
@@ -82,9 +104,7 @@ struct AddNotesView: View {
         for serviceId in viewModel.selectedServiceIds {
             group.enter()
             viewModel.createBooking(serviceId: serviceId) { success in
-                if !success {
-                    hasError = true
-                }
+                if !success { hasError = true }
                 group.leave()
             }
         }
@@ -101,3 +121,4 @@ struct AddNotesView: View {
         }
     }
 }
+////////////////////////////////////

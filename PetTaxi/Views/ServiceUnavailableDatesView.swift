@@ -10,76 +10,91 @@ struct ServiceUnavailableDatesView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.color3.opacity(0.4), Color.color2.opacity(0.2)]),
+                gradient: Gradient(colors: [AppStyle.Colors.accent.opacity(0.4), AppStyle.Colors.secondary.opacity(0.2)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
             .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 20) {
-                Text("Unavailable Dates")
-                    .font(.custom("Vollkorn-Bold", size: 24))
-                    .foregroundColor(.color)
-                    .padding(.top, 20)
-
-                Text("Set unavailable dates for \(viewModel.services[currentServiceIndex].serviceType.capitalized)")
-                    .font(.custom("Vollkorn-Medium", size: 16))
-                    .foregroundColor(.color)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
-                CalendarView(
-                    selectedDates: Binding(
-                        get: { selectedDates[currentServiceIndex] ?? [] },
-                        set: { selectedDates[currentServiceIndex] = $0 }
-                    ),
-                    unavailableDates: loadUnavailableDatesForCurrentService(),
-                    serviceType: viewModel.services[currentServiceIndex].serviceType
-                )
-                .padding()
-
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .font(.custom("Vollkorn-Medium", size: 14))
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
-                }
-
-                HStack {
-                    if currentServiceIndex > 0 {
-                        Button("Back") {
-                            currentServiceIndex -= 1
-                        }
-                        .font(.custom("Vollkorn-Bold", size: 16))
-                        .padding()
-                        .background(Color.color2.opacity(0.3))
-                        .foregroundColor(.color)
-                        .cornerRadius(10)
-                        .shadow(radius: 2)
-                    }
-
-                    Spacer()
-
-                    Button(currentServiceIndex == viewModel.services.count - 1 ? "Submit" : "Next") {
-                        if currentServiceIndex < viewModel.services.count - 1 {
-                            currentServiceIndex += 1
-                        } else {
-                            submitPost()
-                        }
-                    }
-                    .font(.custom("Vollkorn-Bold", size: 16))
-                    .padding()
-                    .background(Color.color3)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 2)
-                }
-                .padding()
+                titleSection
+                calendarSection
+                if let error = errorMessage { errorText(error) }
+                navigationControls
             }
         }
         .onAppear {
             loadAllDates()
         }
+    }
+
+    // MARK: - Subviews
+
+    private var titleSection: some View {
+        VStack(spacing: 10) {
+            Text("Unavailable Dates")
+                .font(AppStyle.Fonts.vollkornBold(24))
+                .foregroundColor(AppStyle.Colors.base)
+                .padding(.top, 20)
+
+            Text("Set unavailable dates for \(viewModel.services[currentServiceIndex].serviceType.capitalized)")
+                .font(AppStyle.Fonts.vollkornMedium(16))
+                .foregroundColor(AppStyle.Colors.base)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+    }
+
+    private var calendarSection: some View {
+        CalendarView(
+            selectedDates: Binding(
+                get: { selectedDates[currentServiceIndex] ?? [] },
+                set: { selectedDates[currentServiceIndex] = $0 }
+            ),
+            unavailableDates: loadUnavailableDatesForCurrentService(),
+            serviceType: viewModel.services[currentServiceIndex].serviceType
+        )
+        .padding()
+    }
+
+    private var navigationControls: some View {
+        HStack {
+            if currentServiceIndex > 0 {
+                Button("Back") {
+                    currentServiceIndex -= 1
+                }
+                .font(AppStyle.Fonts.vollkornBold(16))
+                .padding()
+                .background(AppStyle.Colors.secondary.opacity(0.3))
+                .foregroundColor(AppStyle.Colors.base)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+            }
+
+            Spacer()
+
+            Button(currentServiceIndex == viewModel.services.count - 1 ? "Submit" : "Next") {
+                if currentServiceIndex < viewModel.services.count - 1 {
+                    currentServiceIndex += 1
+                } else {
+                    submitPost()
+                }
+            }
+            .font(AppStyle.Fonts.vollkornBold(16))
+            .padding()
+            .background(AppStyle.Colors.accent)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+            .shadow(radius: 2)
+        }
+        .padding()
+    }
+
+    private func errorText(_ message: String) -> some View {
+        Text(message)
+            .font(AppStyle.Fonts.vollkornMedium(14))
+            .foregroundColor(.red)
+            .padding(.horizontal)
     }
 
     // MARK: - Helper Methods
@@ -98,11 +113,8 @@ struct ServiceUnavailableDatesView: View {
 
     private func submitPost() {
         let formatter = ISO8601DateFormatter()
-
-        // Save all unavailable dates for each service on submit
         for (index, dates) in selectedDates {
-            let formattedDates = dates.map { formatter.string(from: $0) }
-            viewModel.services[index].unavailableDates = formattedDates
+            viewModel.services[index].unavailableDates = dates.map { formatter.string(from: $0) }
         }
 
         viewModel.createPost { success in

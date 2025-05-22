@@ -225,4 +225,20 @@ final class ProfileViewModel: ObservableObject {
             }
         }
     }
+    
+//    func fetchPost(by id: Int, completion: @escaping (Post) -> Void) {
+//        communicationManager.execute(
+//            endpoint: .getPost(id),
+//            responseType: Post.self
+//        ) { result in
+//            DispatchQueue.main.async {
+//                switch result {
+//                case .success(let post):
+//                    completion(post)
+//                case .failure(let error):
+//                    print("Failed to fetch post: \(error)")
+//                }
+//            }
+//        }
+//    }
 }

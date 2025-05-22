@@ -12,19 +12,21 @@ struct ProfilePage: View {
     @State private var showEditPostView = false
     @State private var navigateToAuth = false
     @StateObject private var roleManager = RoleManager()
+    @State private var errorMessage: String?
+    @State private var postToDelete: Post?
 
     var body: some View {
         NavigationStack {
             ZStack {
                 LiveBlurryBackground()
-                
+
                 if viewModel.isLoading {
                     ProgressView("Loading...")
-                        .font(.custom("Vollkorn-Bold", size: 18))
-                        .foregroundColor(.color)
-                } else if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .font(.custom("Vollkorn-Medium", size: 16))
+                        .font(AppStyle.Fonts.vollkornBold(18))
+                        .foregroundColor(AppStyle.Colors.base)
+                } else if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(AppStyle.Fonts.vollkornMedium(16))
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
                         .padding()
@@ -32,122 +34,49 @@ struct ProfilePage: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             profilePictureSection
-                            
                             editInfoButton
-                            
                             profileInfoFields
-                            
-                            if isEditingInfo {
-                                saveProfileButton
-                            }
-                            
-                            if !viewModel.userPosts.isEmpty {
-                                Text("Your Posts")
-                                    .font(.custom("Vollkorn-Bold", size: 24))
-                                    .foregroundColor(.color)
-                                    .padding(.top, 20)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal)
-                                
-                                VStack(spacing: 16) {
-                                    ForEach(viewModel.userPosts, id: \.id) { post in
-                                        ZStack(alignment: .top) {
-                                            PostView(post: post)
-                                                .frame(width: 400, height: 480)
-                                                .background(.color2)
-                                                .cornerRadius(15)
-                                                .shadow(radius: 5)
-                                            
-                                            HStack {
-                                                Button(action: {
-                                                    selectedPost = post
-                                                    showEditPostView = true
-                                                }) {
-                                                    Image(systemName: "pencil.circle.fill")
-                                                        .resizable()
-                                                        .frame(width: 30, height: 30)
-                                                        .foregroundColor(.color3)
-                                                        .padding(8)
-                                                        .background(Color.white.opacity(0.8))
-                                                        .clipShape(Circle())
-                                                }
-                                                
-                                                Spacer()
-                                                
-                                                Button(action: {
-                                                    deletePost(post)
-                                                }) {
-                                                    Image(systemName: "trash.circle.fill")
-                                                        .resizable()
-                                                        .frame(width: 30, height: 30)
-                                                        .foregroundColor(.red)
-                                                        .padding(8)
-                                                        .background(Color.white.opacity(0.8))
-                                                        .clipShape(Circle())
-                                                }
-                                            }
-                                            .padding(8)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                            } else {
-                                Text("No posts yet.")
-                                    .font(.custom("Vollkorn-Medium", size: 16))
-                                    .foregroundColor(.gray)
-                                    .padding()
-                            }
-                            
-                            Spacer()
-                            
-                            NavigationLink(destination: RequestedBookingsView()) {
-                                Text(roleManager.userRole == "admin" ? "Requested Bookings" : "Approved Requests")
-                                    .font(.custom("Vollkorn-Bold", size: 18))
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.color3)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
-                                    .shadow(radius: 5)
-                            }
-                            .padding(.horizontal)
-                                                        
+                            if isEditingInfo { errorTextSection; saveProfileButton }
+                            userPostsSection
+                            navigationLinksSection
                             logoutButton
                         }
                     }
                 }
             }
-            .onAppear {
-                viewModel.fetchProfile()
-            }
+            .onAppear { viewModel.fetchProfile() }
             .fullScreenCover(item: $selectedPost) { post in
                 PostDetailEditView(post: post, viewModel: viewModel)
-                    .onDisappear {
-                        viewModel.fetchProfile()
+                    .onDisappear { viewModel.fetchProfile() }
+            }
+            .confirmationDialog("Are you sure you want to delete this post?", isPresented: Binding<Bool>(
+                get: { postToDelete != nil },
+                set: { if !$0 { postToDelete = nil } }
+            )) {
+                Button("Delete", role: .destructive) {
+                    if let post = postToDelete {
+                        deletePost(post)
+                        postToDelete = nil
                     }
+                }
+                Button("Cancel", role: .cancel) {
+                    postToDelete = nil
+                }
             }
             .navigationDestination(isPresented: $navigateToAuth) {
-                AuthView()
-                    .navigationBarBackButtonHidden(true)
+                AuthView().navigationBarBackButtonHidden(true)
             }
         }
-    }
-
-    private func deletePost(_ post: Post) {
-        viewModel.deletePost(postId: post.id)
     }
 
     // MARK: - Subviews
 
     private var profilePictureSection: some View {
         ZStack {
-            Circle()
-                .fill(Color.white)
-                .frame(width: 128, height: 128)
-                .shadow(radius: 10)
+            Circle().fill(.white).frame(width: 128, height: 128).shadow(radius: 10)
 
-            if let profileImage = viewModel.profilePicture {
-                Image(uiImage: profileImage)
+            if let image = viewModel.profilePicture {
+                Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 128, height: 128)
@@ -162,32 +91,19 @@ struct ProfilePage: View {
 
             PhotosPicker(selection: $selectedItem, matching: .images) {
                 Circle()
-                    .fill(Color.color3)
+                    .fill(AppStyle.Colors.accent)
                     .frame(width: 36, height: 36)
-                    .overlay(
-                        Image(systemName: "camera.fill")
-                            .foregroundColor(.white)
-                    )
+                    .overlay(Image(systemName: "camera.fill").foregroundColor(.white))
                     .shadow(radius: 5)
             }
             .offset(x: 45, y: 45)
-            .onChange(of: selectedItem) { newItem in
-                if let newItem = newItem {
-                    Task {
-                        if let data = try? await newItem.loadTransferable(type: Data.self),
-                           let uiImage = UIImage(data: data) {
-                            pendingProfilePicture = uiImage
-                            showConfirmationDialog = true
-                        }
-                    }
-                }
-            }
+            .onChange(of: selectedItem) { handleImageChange($0) }
         }
         .padding(.top, 40)
-        .confirmationDialog("Are you sure you want to change your profile picture?", isPresented: $showConfirmationDialog, titleVisibility: .visible) {
+        .confirmationDialog("Are you sure you want to change your profile picture?", isPresented: $showConfirmationDialog) {
             Button("Yes") {
-                if let newPicture = pendingProfilePicture {
-                    viewModel.profilePicture = newPicture
+                if let newPic = pendingProfilePicture {
+                    viewModel.profilePicture = newPic
                     viewModel.updateProfilePicture()
                 }
             }
@@ -198,22 +114,18 @@ struct ProfilePage: View {
     }
 
     private var editInfoButton: some View {
-        Button(action: {
-            if isEditingInfo {
-                restoreBackup()
-            } else {
-                createBackup()
-            }
+        Button {
             isEditingInfo.toggle()
-        }) {
+            isEditingInfo ? createBackup() : restoreBackup()
+        } label: {
             HStack {
                 Image(systemName: isEditingInfo ? "xmark.circle.fill" : "pencil.circle.fill")
                 Text(isEditingInfo ? "Exit" : "Edit Profile")
             }
-            .font(.custom("Vollkorn-Bold", size: 18))
-            .foregroundColor(isEditingInfo ? .gray : .color3)
+            .font(AppStyle.Fonts.vollkornBold(18))
+            .foregroundColor(isEditingInfo ? .gray : AppStyle.Colors.accent)
             .padding()
-            .background(Color.white.opacity(0.8))
+            .background(.white.opacity(0.8))
             .cornerRadius(10)
             .shadow(radius: 2)
         }
@@ -221,16 +133,8 @@ struct ProfilePage: View {
 
     private var profileInfoFields: some View {
         Group {
-            EditableFieldView(
-                label: "Username",
-                value: $viewModel.username,
-                isEditable: isEditingInfo
-            )
-            EditableFieldView(
-                label: "Email",
-                value: $viewModel.email,
-                isEditable: isEditingInfo
-            )
+            EditableFieldView(label: "Username", value: $viewModel.username, isEditable: isEditingInfo)
+            EditableFieldView(label: "Email", value: $viewModel.email, isEditable: isEditingInfo)
             EnhancedDescriptionFieldView(
                 description: Binding(
                     get: { viewModel.description ?? "" },
@@ -242,47 +146,168 @@ struct ProfilePage: View {
         .padding(.horizontal)
     }
 
+    private var errorTextSection: some View {
+        Group {
+            if let error = errorMessage {
+                Text(error)
+                    .font(AppStyle.Fonts.vollkornMedium(14))
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+        }
+    }
+
     private var saveProfileButton: some View {
-        Button(action: {
+        Button {
+            let trimmed = viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else {
+                errorMessage = "Username cannot be empty."
+                return
+            }
+            guard trimmed.count >= 5 else {
+                errorMessage = "Username must be at least 5 characters."
+                return
+            }
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 viewModel.saveProfileInfo()
             }
-            isEditingInfo.toggle()
-        }) {
+            isEditingInfo = false
+        } label: {
             Text("Save Profile")
-                .font(.custom("Vollkorn-Bold", size: 18))
+                .font(AppStyle.Fonts.vollkornBold(18))
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.color3)
+                .background(AppStyle.Colors.accent)
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .shadow(radius: 5)
         }
         .padding(.horizontal)
     }
-    
-    private var logoutButton: some View {
-            Button(action: {
-                TokenManager.shared.deleteTokens()
-                navigateToAuth = true
-            }) {
-                Text("Log Out")
-                    .font(.custom("Vollkorn-Bold", size: 18))
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 5)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
-        }
 
-    // MARK: - Backup Methods
+    private var userPostsSection: some View {
+        Group {
+            if !viewModel.userPosts.isEmpty {
+                Text("Your Posts")
+                    .font(AppStyle.Fonts.vollkornBold(24))
+                    .foregroundColor(AppStyle.Colors.base)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding([.top, .horizontal])
+
+                VStack(spacing: 16) {
+                    ForEach(viewModel.userPosts, id: \.id) { post in
+                        ZStack(alignment: .top) {
+                            PostView(post: post)
+                                .frame(width: 400, height: 480)
+                                .background(AppStyle.Colors.secondary)
+                                .cornerRadius(15)
+                                .shadow(radius: 5)
+
+                            HStack {
+                                postEditButton(for: post)
+                                Spacer()
+                                postDeleteButton(for: post)
+                            }
+                            .padding(8)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            } else {
+                Text("No posts yet.")
+                    .font(AppStyle.Fonts.vollkornMedium(16))
+                    .foregroundColor(.gray)
+                    .padding()
+            }
+        }
+    }
+
+    private func postEditButton(for post: Post) -> some View {
+        Button {
+            selectedPost = post
+            showEditPostView = true
+        } label: {
+            Image(systemName: "pencil.circle.fill")
+                .resizable()
+                .frame(width: 30, height: 30)
+                .foregroundColor(AppStyle.Colors.accent)
+                .padding(8)
+                .background(.white.opacity(0.8))
+                .clipShape(Circle())
+        }
+    }
+
+    private func postDeleteButton(for post: Post) -> some View {
+        Button {
+            postToDelete = post
+        } label: {
+            Image(systemName: "trash.circle.fill")
+                .resizable()
+                .frame(width: 30, height: 30)
+                .foregroundColor(.red)
+                .padding(8)
+                .background(.white.opacity(0.8))
+                .clipShape(Circle())
+        }
+    }
+
+    private var navigationLinksSection: some View {
+        NavigationLink(destination: RequestedBookingsView()) {
+            Text(roleManager.userRole == "admin" ? "Requested Bookings" : "Approved Requests")
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(AppStyle.Colors.accent)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 5)
+        }
+        .padding(.horizontal)
+    }
+
+    private var logoutButton: some View {
+        Button {
+            TokenManager.shared.deleteTokens()
+            navigateToAuth = true
+        } label: {
+            Text("Log Out")
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.red)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 5)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 20)
+    }
+
+    // MARK: - Helpers
+
+    private func deletePost(_ post: Post) {
+        viewModel.deletePost(postId: post.id)
+    }
+
+    private func handleImageChange(_ item: PhotosPickerItem?) {
+        guard let item else { return }
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let uiImage = UIImage(data: data) {
+                pendingProfilePicture = uiImage
+                showConfirmationDialog = true
+            }
+        }
+    }
 
     private func createBackup() {
-        backupProfile = ProfileBackup(username: viewModel.username, email: viewModel.email, description: viewModel.description)
+        backupProfile = ProfileBackup(
+            username: viewModel.username,
+            email: viewModel.email,
+            description: viewModel.description
+        )
     }
 
     private func restoreBackup() {
@@ -309,18 +334,19 @@ struct EditableFieldView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
-                .font(.custom("Vollkorn-Medium", size: 14))
+                .font(AppStyle.Fonts.vollkornMedium(15))
                 .foregroundColor(.white)
+
             if isEditable {
                 TextField("", text: $value)
-                    .font(.custom("Vollkorn-Regular", size: 16))
+                    .font(AppStyle.Fonts.vollkornRegular(16))
                     .padding(8)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)
             } else {
                 Text(value)
-                    .font(.custom("Vollkorn-Regular", size: 16))
+                    .font(AppStyle.Fonts.vollkornRegular(16))
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
@@ -339,23 +365,24 @@ struct EnhancedDescriptionFieldView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Description")
-                .font(.custom("Vollkorn-Medium", size: 14))
+                .font(AppStyle.Fonts.vollkornMedium(15))
                 .foregroundColor(.white)
 
             if isEditable {
-                TextField("Add description", text: $description)
-                    .font(.custom("Vollkorn-Regular", size: 16))
+                TextEditor(text: $description)
+                    .font(AppStyle.Fonts.vollkornRegular(16))
+                    .frame(minHeight: 120, alignment: .top)
                     .padding(8)
-                    .frame(minHeight: 120)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)
+                    .scrollContentBackground(.hidden)
             } else {
                 Text(description.isEmpty ? "Add description" : description)
-                    .font(.custom("Vollkorn-Regular", size: 16))
+                    .font(AppStyle.Fonts.vollkornRegular(16))
                     .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .frame(minHeight: 120)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .frame(minHeight: 120, alignment: .top)
                     .background(Color.white)
                     .cornerRadius(10)
                     .shadow(radius: 1)

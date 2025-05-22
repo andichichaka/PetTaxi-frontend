@@ -26,6 +26,7 @@ enum Endpoint {
     case disaproveRequest(Int)
     case getAllLocations
     case custom(String)
+    case getPost(Int)
 
     private var baseURL: String {
         return "http://localhost:3000"
@@ -81,6 +82,8 @@ enum Endpoint {
             return "\(baseURL)/bookings/disapprove/\(id)"
         case .getAllLocations:
             return "\(baseURL)/posts/fetchLocations"
+        case .getPost(let id):
+            return "\(baseURL)/posts/get-one/\(id)"
         case .custom(let customPath):
             return "\(baseURL)/\(customPath)"
         }
@@ -90,7 +93,7 @@ enum Endpoint {
             switch self {
             case .signUp, .logIn, .createPost, .uploadPic, .verifyEmail, .createBooking, .createReview, .refreshToken, .verifyToken:
                 return .POST
-            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews, .fetchPendingRequests, .fetchApprovedRequests, .getAllLocations:
+            case .fetchPosts, .getProfile, .filterPosts, .bookingApprove, .getReviews, .fetchPendingRequests, .fetchApprovedRequests, .getAllLocations, .getPost:
                 return .GET
             case .updatePic, .updateProfile, .approveRequest:
                 return .PUT

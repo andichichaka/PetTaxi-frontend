@@ -6,97 +6,119 @@ struct SetPricesView: View {
     @Binding var isActive: Bool
 
     var body: some View {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.color2.opacity(0.2), Color.white]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    AppStyle.Colors.secondary.opacity(0.2),
+                    AppStyle.Colors.light
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all)
 
-                VStack(spacing: 20) {
-                    Text("Set Prices for Services")
-                        .font(.custom("Vollkorn-Bold", size: 28))
-                        .foregroundColor(.color)
-                        .padding(.top, 20)
-
-                    ScrollView {
-                        VStack(spacing: 15) {
-                            ForEach(0..<viewModel.services.count, id: \.self) { index in
-                                HStack {
-                                    Text(viewModel.services[index].serviceType.capitalized)
-                                        .font(.custom("Vollkorn-Medium", size: 18))
-                                        .foregroundColor(.color)
-
-                                    Spacer()
-
-                                    TextField("Enter price", value: $viewModel.services[index].price, format: .number)
-                                        .keyboardType(.decimalPad)
-                                        .font(.custom("Vollkorn-Regular", size: 16))
-                                        .padding(10)
-                                        .frame(width: 100)
-                                        .background(Color.color2.opacity(0.3))
-                                        .cornerRadius(10)
-                                        .shadow(radius: 2)
-                                }
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(15)
-                                .shadow(radius: 3)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .font(.custom("Vollkorn-Medium", size: 14))
-                            .foregroundColor(.red)
-                            .padding(.horizontal)
-                    }
-
-                    Button(action: {
-                        if validatePrices() {
-                            viewModel.navigateToUnavailableDates = true
-                        } else {
-                            errorMessage = "Please fill in all prices."
-                        }
-                    }) {
-                        Text("Next")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.color3)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 5)
-                    }
-                    .padding(.horizontal)
-
-                    Button(action: {
-                        viewModel.navigateToSetPrices = false
-                    }) {
-                        Text("Back")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.color)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 5)
-                    }
-                    .padding(.horizontal)
-                }
-                .padding()
+            VStack(spacing: 20) {
+                titleSection
+                priceInputs
+                if let error = errorMessage { errorText(error) }
+                actionButtons
             }
-            .navigationDestination(isPresented: $viewModel.navigateToUnavailableDates) {
-                ServiceUnavailableDatesView(viewModel: viewModel, isActive: $isActive)
-            }
+            .padding()
+        }
+        .navigationDestination(isPresented: $viewModel.navigateToUnavailableDates) {
+            ServiceUnavailableDatesView(viewModel: viewModel, isActive: $isActive)
+        }
     }
 
-    // MARK: - Helper Methods
+    // MARK: - Subviews
+
+    private var titleSection: some View {
+        Text("Set Prices for Services")
+            .font(AppStyle.Fonts.vollkornBold(28))
+            .foregroundColor(AppStyle.Colors.base)
+            .padding(.top, 20)
+    }
+
+    private var priceInputs: some View {
+        ScrollView {
+            VStack(spacing: 15) {
+                ForEach(viewModel.services.indices, id: \.self) { index in
+                    servicePriceRow(index: index)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    private func servicePriceRow(index: Int) -> some View {
+        HStack {
+            Text(viewModel.services[index].serviceType.capitalized)
+                .font(AppStyle.Fonts.vollkornMedium(18))
+                .foregroundColor(AppStyle.Colors.base)
+
+            Spacer()
+
+            TextField("Enter price", value: $viewModel.services[index].price, format: .number)
+                .keyboardType(.decimalPad)
+                .font(AppStyle.Fonts.vollkornRegular(16))
+                .padding(10)
+                .frame(width: 100)
+                .background(AppStyle.Colors.secondary.opacity(0.3))
+                .cornerRadius(10)
+                .shadow(radius: 2)
+        }
+        .padding()
+        .background(AppStyle.Colors.light)
+        .cornerRadius(15)
+        .shadow(radius: 3)
+    }
+
+    private func errorText(_ message: String) -> some View {
+        Text(message)
+            .font(AppStyle.Fonts.vollkornMedium(14))
+            .foregroundColor(.red)
+            .padding(.horizontal)
+    }
+
+    private var actionButtons: some View {
+        VStack(spacing: 10) {
+            Button {
+                if validatePrices() {
+                    viewModel.navigateToUnavailableDates = true
+                } else {
+                    errorMessage = "Please fill in all prices."
+                }
+            } label: {
+                Text("Next")
+                    .font(AppStyle.Fonts.vollkornBold(18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppStyle.Colors.accent)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+            }
+            .padding(.horizontal)
+
+            Button {
+                viewModel.navigateToSetPrices = false
+            } label: {
+                Text("Back")
+                    .font(AppStyle.Fonts.vollkornBold(18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppStyle.Colors.base)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    // MARK: - Helper
 
     private func validatePrices() -> Bool {
-        return viewModel.services.allSatisfy { $0.price > 0 }
+        viewModel.services.allSatisfy { $0.price > 0 }
     }
 }
