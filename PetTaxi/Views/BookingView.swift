@@ -12,82 +12,27 @@ struct BookingView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(gradient: Gradient(colors: [Color.color.opacity(0.1), Color.color1]), startPoint: .top, endPoint: .bottom)
-                    .edgesIgnoringSafeArea(.all)
+                LinearGradient(
+                    gradient: Gradient(colors: [AppStyle.Colors.base.opacity(0.1), AppStyle.Colors.light]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 20) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Choose Service")
-                            .font(.custom("Vollkorn-Bold", size: 20))
-                            .foregroundColor(.color)
-
-                        if availableServices.isEmpty {
-                            Text("No services available")
-                                .font(.custom("Vollkorn-Medium", size: 16))
-                                .foregroundColor(.gray)
-                                .padding()
-                        } else {
-                            ForEach(availableServices, id: \.id) { service in
-                                serviceSelectionView(for: service)
-                            }
-                        }
-                    }
-                    .padding()
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Animal Size")
-                            .font(.custom("Vollkorn-Bold", size: 20))
-                            .foregroundColor(.color)
-
-                        if availableAnimalSizes.isEmpty {
-                            Text("No sizes available")
-                                .font(.custom("Vollkorn-Medium", size: 16))
-                                .foregroundColor(.gray)
-                                .padding()
-                        } else {
-                            ForEach(availableAnimalSizes, id: \.self) { size in
-                                sizeSelectionView(for: size)
-                            }
-                        }
-                    }
-                    .padding()
-
+                    serviceSelectionSection
+                    animalSizeSelectionSection
                     Spacer()
-
-                    Button(action: {
-                        viewModel.isDateSelectionActive = true
-                    }) {
-                        Text("Next")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .bold()
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(viewModel.selectedServiceIds.isEmpty ? Color.gray : Color.color3)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 2)
-                    }
-                    .padding(.horizontal)
-                    .disabled(viewModel.selectedServiceIds.isEmpty)
-
-                    Button(action: {
-                        isActive = false
-                    }) {
-                        Text("Close")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.color)
-                            .cornerRadius(10)
-                            .shadow(radius: 2)
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 20)
+                    nextButton
+                    closeButton
                 }
             }
             .navigationDestination(isPresented: $viewModel.isDateSelectionActive) {
-                MultiServiceCalendarView(viewModel: viewModel, services: selectedServices, unavailableDates: unavailableDates)
+                MultiServiceCalendarView(
+                    viewModel: viewModel,
+                    services: selectedServices,
+                    unavailableDates: unavailableDates
+                )
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -102,15 +47,90 @@ struct BookingView: View {
         }
     }
 
-    // MARK: - Helper Views and Methods
+    // MARK: - Sections
+    private var serviceSelectionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Choose Service")
+                .font(AppStyle.Fonts.vollkornBold(20))
+                .foregroundColor(AppStyle.Colors.base)
+
+            if availableServices.isEmpty {
+                Text("No services available")
+                    .font(AppStyle.Fonts.vollkornMedium(16))
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                ForEach(availableServices, id: \ .id) { service in
+                    serviceSelectionView(for: service)
+                }
+            }
+        }
+        .padding()
+    }
+
+    private var animalSizeSelectionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Animal Size")
+                .font(AppStyle.Fonts.vollkornBold(20))
+                .foregroundColor(AppStyle.Colors.base)
+
+            if availableAnimalSizes.isEmpty {
+                Text("No sizes available")
+                    .font(AppStyle.Fonts.vollkornMedium(16))
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                ForEach(availableAnimalSizes, id: \ .self) { size in
+                    sizeSelectionView(for: size)
+                }
+            }
+        }
+        .padding()
+    }
+
+    private var nextButton: some View {
+        Button(action: {
+            viewModel.isDateSelectionActive = true
+        }) {
+            Text("Next")
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(viewModel.selectedServiceIds.isEmpty ? Color.gray : AppStyle.Colors.accent)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+        }
+        .padding(.horizontal)
+        .disabled(viewModel.selectedServiceIds.isEmpty)
+    }
+
+    private var closeButton: some View {
+        Button(action: {
+            isActive = false
+        }) {
+            Text("Close")
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(AppStyle.Colors.base)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 20)
+    }
+
+    // MARK: - Helper Views
     private func serviceSelectionView(for service: Service) -> some View {
         let isSelected = viewModel.selectedServiceIds.contains(service.id!)
         return Text(service.serviceType.capitalized)
-            .font(.custom("Vollkorn-Medium", size: 16))
+            .font(AppStyle.Fonts.vollkornMedium(16))
             .padding()
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.color3.opacity(0.7) : Color.color2.opacity(0.3))
-            .foregroundColor(isSelected ? .white : .color)
+            .background(isSelected ? AppStyle.Colors.accent.opacity(0.7) : AppStyle.Colors.secondary.opacity(0.3))
+            .foregroundColor(isSelected ? .white : AppStyle.Colors.base)
             .cornerRadius(10)
             .shadow(radius: 2)
             .onTapGesture {
@@ -121,11 +141,11 @@ struct BookingView: View {
     private func sizeSelectionView(for size: String) -> some View {
         let isSelected = viewModel.selectedAnimalSize == size
         return Text(size)
-            .font(.custom("Vollkorn-Medium", size: 16))
+            .font(AppStyle.Fonts.vollkornMedium(16))
             .padding()
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.color3.opacity(0.7) : Color.color2.opacity(0.3))
-            .foregroundColor(isSelected ? .white : .color)
+            .background(isSelected ? AppStyle.Colors.accent.opacity(0.7) : AppStyle.Colors.secondary.opacity(0.3))
+            .foregroundColor(isSelected ? .white : AppStyle.Colors.base)
             .cornerRadius(10)
             .shadow(radius: 2)
             .onTapGesture {

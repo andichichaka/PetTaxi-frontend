@@ -14,57 +14,31 @@ struct PostDetailEditView: View {
     @State private var showEditDatesView = false
     @Environment(\.presentationMode) var presentationMode
 
-    let allServiceTypeOptions = ["Daily Walking", "Weekly Walking", "Daily Sitting", "Weekly Sitting", "Other"]
-    let allAnimalSizeOptions = ["Mini (0-5kg)", "Small (5-10kg)", "Medium (10-15kg)", "Large (15-25kg)", "Other"]
-    let allAnimalTypeOptions = ["Dog", "Cat", "Both"]
     @State private var allLocations: [Location] = []
+
+    private let serviceOptions = ServiceType.allCases.map { $0.rawValue }
+    private let sizeOptions = AnimalSize.allCases.map { $0.rawValue }
+    private let animalOptions = AnimalType.allCases.map { $0.rawValue }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
                     imagesSection
-
                     descriptionSection
-                    
                     locationPicker
-
                     servicesSection
-
                     animalSizesSection
-
                     animalTypeSection
 
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .font(.custom("Vollkorn-Medium", size: 14))
+                    if let error = errorMessage {
+                        Text(error)
+                            .font(AppStyle.Fonts.vollkornMedium(14))
                             .foregroundColor(.red)
                             .padding()
                     }
 
-                    Button(action: savePost) {
-                        Text("Save Post")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.color3)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
-                    }
-                    .padding()
-
-                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                        Text("Close")
-                            .font(.custom("Vollkorn-Bold", size: 18))
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.color)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
-                    }
-                    .padding()
+                    actionButtons
                 }
             }
             .navigationTitle("Edit Post")
@@ -75,45 +49,20 @@ struct PostDetailEditView: View {
                 }
             }
             .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, matching: .images)
-            .onChange(of: selectedItems) { _ in
-                loadSelectedImages()
-            }
+            .onChange(of: selectedItems) { _ in loadSelectedImages() }
             .onAppear {
                 loadExistingPostImages()
                 fetchLocations()
             }
         }
     }
-    
-    private func fetchLocations() {
-        CommunicationManager.shared.execute(
-            endpoint: .getAllLocations,
-            responseType: [Location].self
-        ) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let locations):
-                    allLocations = locations
-                case .failure(let error):
-                    print("Failed to load locations: \(error.localizedDescription)")
-                }
-            }
-        }
-    }
 
-    // MARK: - Post Images Section
+    // MARK: - Sections
+
     private var imagesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Post Images")
-                    .font(.custom("Vollkorn-Bold", size: 18))
-                    .foregroundColor(.color)
-                Spacer()
-                Button(action: { showImagePicker.toggle() }) {
-                    Text("Add Photos")
-                        .font(.custom("Vollkorn-Medium", size: 16))
-                        .foregroundColor(.color3)
-                }
+            sectionHeader("Post Images", buttonTitle: "Add Photos") {
+                showImagePicker.toggle()
             }
 
             if !selectedImages.isEmpty {
@@ -128,15 +77,15 @@ struct PostDetailEditView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                                     .shadow(radius: 3)
 
-                                Button(action: {
+                                Button {
                                     if let index = selectedImages.firstIndex(of: image) {
                                         selectedImages.remove(at: index)
                                         showSavePhotosButton = true
                                     }
-                                }) {
+                                } label: {
                                     Image(systemName: "xmark.circle.fill")
                                         .foregroundColor(.red)
-                                        .background(Color.white)
+                                        .background(.white)
                                         .clipShape(Circle())
                                 }
                                 .offset(x: -8, y: 8)
@@ -144,39 +93,38 @@ struct PostDetailEditView: View {
                         }
                     }
                 }
-                .padding()
+                .padding(.top, 4)
             } else {
                 Text("No images available")
-                    .font(.custom("Vollkorn-Regular", size: 14))
-                    .foregroundColor(.color.opacity(0.7))
-                    .padding()
+                    .font(AppStyle.Fonts.vollkornRegular(14))
+                    .foregroundColor(AppStyle.Colors.base.opacity(0.7))
+                    .padding(.top, 4)
             }
 
             if showSavePhotosButton {
                 Button(action: savePhotos) {
                     Text("Save Photos")
-                        .font(.custom("Vollkorn-Bold", size: 16))
+                        .font(AppStyle.Fonts.vollkornBold(16))
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.color2)
+                        .background(AppStyle.Colors.secondary)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                         .shadow(radius: 3)
                 }
-                .padding(.top)
             }
         }
         .padding()
     }
 
-    // MARK: - Post Description Section
     private var descriptionSection: some View {
         VStack(alignment: .leading) {
             Text("Post Description")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
+
             TextEditor(text: $post.description)
-                .font(.custom("Vollkorn-Regular", size: 16))
+                .font(AppStyle.Fonts.vollkornRegular(16))
                 .frame(minHeight: 120)
                 .padding()
                 .background(Color.white)
@@ -185,13 +133,12 @@ struct PostDetailEditView: View {
         }
         .padding()
     }
-    
-    // MARK: - Locations picker Section
+
     private var locationPicker: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Location")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
             Picker("Select Location", selection: Binding(
                 get: { post.location?.id ?? allLocations.first?.id ?? -1 },
@@ -214,89 +161,164 @@ struct PostDetailEditView: View {
         .padding()
     }
 
-    // MARK: - Services Section
     private var servicesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Services")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
-            
-            ForEach(allServiceTypeOptions, id: \.self) { serviceType in
-                if let index = post.services.firstIndex(where: { $0.serviceType.lowercased() == serviceType.lowercased() }) {
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
+
+            ForEach(serviceOptions, id: \.self) { type in
+                if let index = post.services.firstIndex(where: { $0.serviceType.lowercased() == type.lowercased() }) {
                     serviceRow(for: post.services[index], at: index)
                 } else {
-                    HStack {
-                        Text(serviceType.capitalized)
-                            .font(.custom("Vollkorn-Medium", size: 16))
-                            .foregroundColor(.color)
-                        Spacer()
-                        Button(action: {
-                            addNewService(ofType: serviceType)
-                        }) {
-                            Text("Add Service")
-                                .font(.custom("Vollkorn-Medium", size: 14))
-                                .padding(6)
-                                .background(Color.color3.opacity(0.7))
-                                .cornerRadius(8)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .padding(6)
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 2)
+                    serviceAddRow(serviceType: type)
                 }
             }
         }
         .padding()
     }
 
-    // MARK: - Animal Sizes Section
     private var animalSizesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Animal Sizes")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
 
-            ForEach(allAnimalSizeOptions, id: \.self) { size in
+            ForEach(sizeOptions, id: \.self) { size in
                 if let index = post.animalSizes.firstIndex(of: size.lowercased()) {
-                    animalSizeRow(for: size, at: index)
+                    sizeRow(for: size, at: index)
                 } else {
-                    HStack {
-                        Text(size)
-                            .font(.custom("Vollkorn-Medium", size: 16))
-                            .foregroundColor(.color)
-                        Spacer()
-                        Button(action: {
-                            post.animalSizes.append(size.lowercased())
-                        }) {
-                            Text("Add Size")
-                                .font(.custom("Vollkorn-Medium", size: 14))
-                                .padding(6)
-                                .background(Color.color3.opacity(0.7))
-                                .cornerRadius(8)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .padding(6)
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 2)
+                    sizeAddRow(size: size)
                 }
             }
         }
         .padding()
     }
 
-    private func animalSizeRow(for size: String, at index: Int) -> some View {
+    private var animalTypeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Animal Type")
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
+
+            ForEach(animalOptions, id: \.self) { type in
+                HStack {
+                    Text(type)
+                        .font(AppStyle.Fonts.vollkornMedium(16))
+                    Spacer()
+                    Image(systemName: post.animalType == type.lowercased() ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(post.animalType == type.lowercased() ? AppStyle.Colors.accent : .gray)
+                }
+                .onTapGesture {
+                    post.animalType = type.lowercased()
+                }
+                .padding(6)
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+            }
+        }
+        .padding()
+    }
+
+    private var actionButtons: some View {
+        VStack(spacing: 12) {
+            Button(action: savePost) {
+                Text("Save Post")
+                    .font(AppStyle.Fonts.vollkornBold(18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppStyle.Colors.accent)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 3)
+            }
+
+            Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                Text("Close")
+                    .font(AppStyle.Fonts.vollkornBold(18))
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppStyle.Colors.base)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(radius: 3)
+            }
+        }
+        .padding()
+    }
+
+    // MARK: - Reusable Mini Views
+
+    private func serviceRow(for service: Service, at index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(service.serviceType.capitalized)
+                    .font(AppStyle.Fonts.vollkornMedium(16))
+
+                Spacer()
+
+                Button("Edit Dates") {
+                    editingServiceIndex = index
+                    showEditDatesView = true
+                }
+                .font(AppStyle.Fonts.vollkornMedium(14))
+                .padding(6)
+                .background(AppStyle.Colors.secondary.opacity(0.7))
+                .cornerRadius(8)
+                .foregroundColor(.white)
+
+                Button {
+                    post.services.remove(at: index)
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
+                }
+            }
+
+            HStack {
+                Text("Price:")
+                TextField("Price", value: $post.services[index].price, format: .number)
+                    .keyboardType(.decimalPad)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(width: 100)
+            }
+            .font(AppStyle.Fonts.vollkornRegular(16))
+        }
+        .padding(6)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(radius: 2)
+    }
+
+    private func serviceAddRow(serviceType: String) -> some View {
+        HStack {
+            Text(serviceType.capitalized)
+                .font(AppStyle.Fonts.vollkornMedium(16))
+            Spacer()
+            Button("Add Service") {
+                addNewService(ofType: serviceType)
+            }
+            .font(AppStyle.Fonts.vollkornMedium(14))
+            .padding(6)
+            .background(AppStyle.Colors.accent.opacity(0.7))
+            .cornerRadius(8)
+            .foregroundColor(.white)
+        }
+        .padding(6)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(radius: 2)
+    }
+
+    private func sizeRow(for size: String, at index: Int) -> some View {
         HStack {
             Text(size)
-                .font(.custom("Vollkorn-Medium", size: 16))
-                .foregroundColor(.color)
+                .font(AppStyle.Fonts.vollkornMedium(16))
             Spacer()
-            Button(action: {
+            Button {
                 post.animalSizes.remove(at: index)
-            }) {
+            } label: {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
             }
@@ -307,84 +329,55 @@ struct PostDetailEditView: View {
         .shadow(radius: 2)
     }
 
-    // MARK: - Animal Type Section
-    private var animalTypeSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Animal Type")
-                .font(.custom("Vollkorn-Bold", size: 18))
-                .foregroundColor(.color)
-
-            ForEach(allAnimalTypeOptions, id: \.self) { type in
-                HStack {
-                    Text(type)
-                        .font(.custom("Vollkorn-Medium", size: 16))
-                        .foregroundColor(.color)
-                    Spacer()
-                    Button(action: {
-                        post.animalType = type.lowercased()
-                    }) {
-                        Image(systemName: post.animalType == type.lowercased() ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(post.animalType == type.lowercased() ? .color3 : .gray)
-                    }
-                }
-                .padding(6)
-                .background(Color.white)
-                .cornerRadius(10)
-                .shadow(radius: 2)
+    private func sizeAddRow(size: String) -> some View {
+        HStack {
+            Text(size)
+                .font(AppStyle.Fonts.vollkornMedium(16))
+            Spacer()
+            Button("Add Size") {
+                post.animalSizes.append(size.lowercased())
             }
-        }
-        .padding()
-    }
-    
-    private func serviceRow(for service: Service, at index: Int) -> some View {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(post.services[index].serviceType.capitalized)
-                        .font(.custom("Vollkorn-Medium", size: 16))
-                        .foregroundColor(.color)
-
-                    Spacer()
-
-                    Button(action: {
-                        editingServiceIndex = index
-                        showEditDatesView = true
-                    }) {
-                        Text("Edit Dates")
-                            .font(.custom("Vollkorn-Medium", size: 14))
-                            .padding(6)
-                            .background(Color.color2.opacity(0.7))
-                            .cornerRadius(8)
-                            .foregroundColor(.white)
-                    }
-
-                    Button(action: {
-                        post.services.remove(at: index)
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                }
-
-                HStack {
-                    Text("Price:")
-                        .font(.custom("Vollkorn-Medium", size: 16))
-                        .foregroundColor(.color)
-                    TextField("Price", value: $post.services[index].price, format: .number)
-                        .keyboardType(.decimalPad)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: 100)
-                        .font(.custom("Vollkorn-Regular", size: 16))
-                }
-            }
+            .font(AppStyle.Fonts.vollkornMedium(14))
             .padding(6)
-            .background(Color.white)
-            .cornerRadius(10)
-            .shadow(radius: 2)
+            .background(AppStyle.Colors.accent.opacity(0.7))
+            .cornerRadius(8)
+            .foregroundColor(.white)
         }
+        .padding(6)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(radius: 2)
+    }
 
-    // MARK: - Helper Methods
+    private func sectionHeader(_ title: String, buttonTitle: String, action: @escaping () -> Void) -> some View {
+        HStack {
+            Text(title)
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .foregroundColor(AppStyle.Colors.base)
+            Spacer()
+            Button(buttonTitle, action: action)
+                .font(AppStyle.Fonts.vollkornMedium(16))
+                .foregroundColor(AppStyle.Colors.accent)
+        }
+    }
+
+    // MARK: - Logic
+
+    private func fetchLocations() {
+        CommunicationManager.shared.execute(
+            endpoint: .getAllLocations,
+            responseType: [Location].self
+        ) { result in
+            DispatchQueue.main.async {
+                if case let .success(locations) = result {
+                    allLocations = locations
+                }
+            }
+        }
+    }
+
     private func savePost() {
-        if post.services.isEmpty {
+        guard !post.services.isEmpty else {
             errorMessage = "You must select at least one service."
             return
         }
@@ -417,7 +410,9 @@ struct PostDetailEditView: View {
         Task {
             guard let imageUrls = post.imagesUrl else { return }
             for url in imageUrls {
-                if let url = URL(string: url), let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                if let url = URL(string: url),
+                   let data = try? Data(contentsOf: url),
+                   let image = UIImage(data: data) {
                     selectedImages.append(image)
                 }
             }

@@ -9,41 +9,16 @@ struct EditUnavailableDatesView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Text("Edit Unavailable Dates")
-                    .font(.title)
-                    .bold()
-
-                Text("Select unavailable dates for \(service.serviceType.capitalized)")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-
-                CalendarView(
-                    selectedDates: $selectedDates,
-                    unavailableDates: loadUnavailableDates(),
-                    serviceType: service.serviceType
-                )
-
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .font(.caption)
+                headerTitle
+                subTitle
+                calendar
+                if let errorMessage {
+                    errorText(errorMessage)
                 }
-
-                Button(action: saveDates) {
-                    Text("Done")
-                        .bold()
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .padding(.horizontal)
+                saveButton
             }
             .padding()
-            .onAppear {
-                loadSelectedDates()
-            }
+            .onAppear(perform: loadSelectedDates)
             .navigationTitle("Edit Dates")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -51,15 +26,61 @@ struct EditUnavailableDatesView: View {
                     Button("Cancel") {
                         isPresented = false
                     }
+                    .font(AppStyle.Fonts.vollkornMedium(16))
                 }
             }
         }
     }
 
-    // MARK: - Helper Methods
+    // MARK: - Subviews
+
+    private var headerTitle: some View {
+        Text("Edit Unavailable Dates")
+            .font(AppStyle.Fonts.vollkornBold(24))
+            .foregroundColor(AppStyle.Colors.base)
+    }
+
+    private var subTitle: some View {
+        Text("Select unavailable dates for \(service.serviceType.capitalized)")
+            .font(AppStyle.Fonts.vollkornMedium(16))
+            .foregroundColor(AppStyle.Colors.base)
+            .multilineTextAlignment(.center)
+    }
+
+    private var calendar: some View {
+        CalendarView(
+            selectedDates: $selectedDates,
+            unavailableDates: loadUnavailableDates(),
+            serviceType: service.serviceType
+        )
+        .padding(.vertical, 5)
+    }
+
+    private func errorText(_ message: String) -> some View {
+        Text(message)
+            .foregroundColor(.red)
+            .font(AppStyle.Fonts.vollkornMedium(13))
+            .padding(.top, 5)
+    }
+
+    private var saveButton: some View {
+        Button(action: saveDates) {
+            Text("Done")
+                .font(AppStyle.Fonts.vollkornBold(18))
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(AppStyle.Colors.accent)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 2)
+        }
+        .padding(.horizontal)
+    }
+
+    // MARK: - Logic
 
     private func saveDates() {
-        if selectedDates.isEmpty {
+        guard !selectedDates.isEmpty else {
             errorMessage = "Please select at least one unavailable date."
             return
         }
